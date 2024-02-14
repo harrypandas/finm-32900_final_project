@@ -3,7 +3,6 @@
 ## Team
 * Ian Hammock <ihammock@uchicago.edu>
 * Harrison Holt <hholt@uchicago.edu>
-* Kenny Sidoryk <ksidoryk@uchicago.edu>
 * Viren Desai <vdd@uchicago.edu>
 
 ## Final Project Details
