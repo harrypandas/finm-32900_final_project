@@ -75,7 +75,7 @@ def task_compile_latex_docs():
     file_dep = [
         # "./reports/report_example.tex",
         # "./reports/slides_example.tex",
-        "./reports/slides_example.tex",
+       # "./reports/slides_example.tex",
         "./output/pandas_to_latex_simple_table1.tex",
     ]
     file_output = [
