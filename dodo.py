@@ -8,7 +8,7 @@ import os
 import config
 from pathlib import Path
 from doit.tools import run_once
-
+import shutil
 
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
@@ -49,6 +49,56 @@ def task_run_config():
     }
     return actdict
 
+def task_run_placeholderTables(): 
+
+    #add file dep on data being made 
+    file_dep = [ "./src/pandas_to_latex_demo.py"]
+    file_output = [
+        "pandas_to_latex_simple_table1.tex",
+        ]
+    targets = [OUTPUT_DIR / file for file in file_output]
+
+    actdict = {
+    'actions': [
+    "ipython ./src/pandas_to_latex_demo.py",
+  
+    ], 
+    "targets": targets,
+    "file_dep": file_dep,
+    'clean': True,
+    }
+
+    return actdict
+
+def task_compile_latex_docs():
+    """Example plots"""
+    file_dep = [
+        # "./reports/report_example.tex",
+        # "./reports/slides_example.tex",
+        "./reports/slides_example.tex",
+        "./output/pandas_to_latex_simple_table1.tex",
+    ]
+    file_output = [
+        "./reports/final_report.pdf",
+       # "./reports/slides_example.pdf",
+    ]
+    targets = [file for file in file_output]
+
+    return {
+        "actions": [
+
+            "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
+            "latexmk -xelatex -c -cd ./reports/final_report.tex",  # Clean
+            # "latexmk -xelatex -cd ./reports/report_example.tex",  # Compile
+            # "latexmk -xelatex -c -cd ./reports/report_example.tex",  # Clean
+            # "latexmk -xelatex -cd ./reports/slides_example.tex",  # Compile
+            # "latexmk -xelatex -c -cd ./reports/slides_example.tex",  # Clean
+            # # "latexmk -CA -cd ../reports/",
+        ],
+        "targets": targets,
+        "file_dep": file_dep,
+        "clean": True,
+    }
 
 # def task_pull_CRSP_Compustat():
 #     """Pull CRSP/Compustat data from WRDS and save to disk
