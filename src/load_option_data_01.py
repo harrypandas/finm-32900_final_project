@@ -114,6 +114,11 @@ def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996):
 	#https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/secprd1996/
 
 	#a.secid, a.date,
+
+	'''
+
+		AND
+	'''
 	sql_query = f"""
 		SELECT 
 			 b.secid, b.date,  
@@ -125,13 +130,17 @@ def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996):
 		JOIN 
 			optionm_all.secprd{year} AS b ON a.date = b.date AND a.secid = b.secid
 		WHERE
+			(a.strike_price/1000 BETWEEN (0.875*0.5*(b.open+b.close) ) AND (1.125*0.5*(b.open+b.close)))
+
+			AND (
+
 			(a.exdate BETWEEN (a.date + INTERVAL '25 days') AND (a.date + INTERVAL '35 days') )
-		OR 
+			OR 
 			(a.exdate BETWEEN (a.date + INTERVAL '55 days') AND (a.date + INTERVAL '65 days'))
-		OR
+			OR
 			(a.exdate BETWEEN (a.date + INTERVAL '85 days') AND (a.date + INTERVAL '95 days'))
-		AND
-			(a.strike_price BETWEEN (0.875*0.5*(b.open+b.close) ) AND (1.125*0.5*(b.open+b.close)))
+
+			)
 		LIMIT 2000; 
 		
 	""" 
