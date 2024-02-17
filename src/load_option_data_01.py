@@ -1,4 +1,4 @@
-import pandas as pandas
+import pandas as pd
 import numpy as np
 import wrds
 import config
@@ -105,13 +105,31 @@ def pull_Security_info(wrds_username = WRDS_USERNAME, year = 1996):
 	db.close()
 	return optm
 
+def pull_FedH15(wrds_username = WRDS_USERNAME):
+	#https://wrds-www.wharton.upenn.edu/data-dictionary/frb_all/rates_daily/
+	sql_query = f"""
+		SELECT 
+			c.date, c.tb_m3
+			
+		FROM
+			frb_all.rates_daily AS c 
 
+		LIMIT 2000; 
+		
+	""" 
+
+	db = wrds.Connection(wrds_username=wrds_username)
+	optm = db.raw_sql(sql_query, date_cols = ["date"])
+	db.close()
+	return optm
 
 def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996): 
 	#use PostgreSQL
 	#https://wrds-www.wharton.upenn.edu/pages/support/manuals-and-overviews/optionmetrics/wrds-overview-optionmetrics/
 	#https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/opprcd2023/ 
 	#https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/secprd1996/
+
+	#https://wrds-www.wharton.upenn.edu/data-dictionary/frb_all/rates_daily/
 
 	#a.secid, a.date,
 
@@ -121,15 +139,25 @@ def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996):
 	'''
 	sql_query = f"""
 		SELECT 
-			 b.secid, b.date,  
+			d.ticker, b.secid, b.date,  
 			b.open, b.close, 
 			a.cp_flag, 
-			a.exdate, a.strike_price, a.impl_volatility 
+			a.exdate, a.impl_volatility, c.tb_m3, 
+			a.best_bid, a.best_offer, a.strike_price
 		FROM
 			optionm_all.opprcd{year} AS a
 		JOIN 
 			optionm_all.secprd{year} AS b ON a.date = b.date AND a.secid = b.secid
+
+		JOIN 
+			frb_all.rates_daily AS c ON c.date = a.date 
+
+		JOIN 
+			optionm_all.secnmd as d on d.secid = a.secid
+
 		WHERE
+
+
 			(a.strike_price/1000 BETWEEN (0.875*0.5*(b.open+b.close) ) AND (1.125*0.5*(b.open+b.close)))
 
 			AND (
@@ -149,9 +177,27 @@ def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996):
 	optm = db.raw_sql(sql_query, date_cols = ["date"])
 	db.close()
 	return optm
+
+
+def pull_Year_Range(wrds_username = WRDS_USERNAME, yearStart = 1996, yearEnd = 1998):
+
+	dlist = []
+	for year in range(yearStart, yearEnd + 1): 
+		print(year)
+		dftemp =pull_Opt_Sec_info(wrds_username = wrds_username, year = year)
+		dlist.append(dftemp)
+
+	df = pd.concat(dlist, axis = 0)
+	return df
+
+
 if __name__ == "__main__": 
 	#x = pull_Option_info()
 	#y = pull_Security_info()
-	z =pull_Opt_Sec_info()
-	# wrds_username = WRDS_USERNAME
-	# db = wrds.Connection(wrds_username=wrds_username)
+	#z = pull_Opt_Sec_info()
+	#a = pull_FedH15()
+	df = pull_Year_Range()
+	df.reset_index(drop = True)
+	save_path = DATA_DIR.joinpath( "sampledata.parquet")
+	df.to_parquet(save_path)
+	
