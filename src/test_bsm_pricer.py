@@ -8,6 +8,10 @@ DATA_DIR = config.DATA_DIR
 import bsm_pricer
 
 def test_bsm_call_price():
+    """
+    Test the bsm_pricer.european_call_price() function.
+    """
+
     kwargs = {
         "S": 100,
         "K": 5,
@@ -23,6 +27,10 @@ def test_bsm_call_price():
     assert (bsm_pricer.european_call_price(**kwargs) - expected_output) < 1e-10
     
 def test_bsm_put_price():
+    """
+    Test the bsm_pricer.european_put_price() function.
+    """
+
     kwargs = {
         "S": 100,
         "K": 5,
