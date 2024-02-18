@@ -1,7 +1,5 @@
 import math
 
-import math
-
 def european_call_price(S, K, r, T, sigma):
     """
     Calculates the price of a European call option using the Black-Scholes-Merton model.
