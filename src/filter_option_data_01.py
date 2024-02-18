@@ -19,13 +19,18 @@ def getSecPrice(df):
 	df['sec_price'] = (df['open'] + df['close'])/2
 	return df 
 
+def delete_identical_filter(df):
+	columns_to_check = ['cp_flag', 'strike_price','date', 'exdate', 'option_price']
+	df = df.drop_duplicates(subset=columns_to_check, keep='first')
+	return df	
 
 def appendixBfilter_level1(df): 
 	#remove identical options (type, strike, experiation date, price)
 	#price is defined on the buy side - so use best_bid?
 
-	df = df.drop_duplicates(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate', 'best_bid'])
-	
+	# df = df.drop_duplicates(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate', 'best_bid'])
+
+	df = delete_identical_filter(df)
 
 	#some are identical (type, strike, maturity, date) but different prices. 
 	#KEEP closest to TBill based implied volatility of moneyness neighbors 
