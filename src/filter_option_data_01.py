@@ -234,6 +234,6 @@ if __name__ == "__main__":
 	float_format_func = lambda x: '{:.2f}'.format(x)
 	tableB_2012 = tableB1.to_latex(float_format=float_format_func)
 
-	path = OUTPUT_DIR / f'tableB1.tex'
+	path = OUTPUT_DIR / f'tableB1_2012.tex'
 	with open(path, "w") as text_file:
 	    text_file.write(tableB_2012)
