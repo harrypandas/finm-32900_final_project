@@ -10,15 +10,6 @@ Functions:
 - calc_vega: Calculates the option vega using the Black-Scholes-Merton model.
 - iv_objective: Calculates the difference between the market price and the theoretical price of an option.
 - calc_implied_volatility: Calculates the implied volatility of an option using the bisection method.
-
-Usage:
-1. Import the module:
-    import bsm_pricer
-
-2. Call the desired functions:
-    call_price = bsm_pricer.european_call_price(S, K, r, T, sigma)
-    put_price = bsm_pricer.european_put_price(S, K, r, T, sigma)
-    implied_volatility = bsm_pricer.calc_implied_volatility(market_price, S, K, T, r, option_type)
 """
 
 import math
@@ -49,11 +40,6 @@ def european_call_price(S, K, r, T, sigma):
     return call_price
 
 
-
-
-
-
-
 def european_put_price(S, K, r, T, sigma):
     """
     Calculates the price of a European put option using the Black-Scholes-Merton model.
@@ -75,23 +61,6 @@ def european_put_price(S, K, r, T, sigma):
     put_price = K * math.exp(-r * T) * norm_cdf(-d2) - S * norm_cdf(-d1)
     return put_price
 
-
-def european_sigma( Bid, S, K, r, T, type = 'C', guess = 0.1):
-    if type == 'C': 
-        funct = lambda sigma : (european_call_price(S,K,r,T, sigma) - Bid)**2
-    if type == 'P':  
-        funct = lambda sigma : (european_put_price(S,K,r,T, sigma) - Bid)**2 
-    result = minimize(funct, guess, bounds = [(0, None)]) 
-    return result[0]
-
-
-def european_sigma( Bid, S, K, r, T, type = 'C', guess = 0.1):
-    if type == 'C': 
-        funct = lambda sigma : (european_call_price(S,K,r,T, sigma) - Bid)**2
-    if type == 'P':  
-        funct = lambda sigma : (european_put_price(S,K,r,T, sigma) - Bid)**2 
-    result = minimize(funct, guess, bounds = [(0, None)]) 
-    return result[0]
 
 def norm_cdf(x):
     """
