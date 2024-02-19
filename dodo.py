@@ -54,12 +54,29 @@ def task_load_and_save_data():
 
     file_dep = [ "./src/load_option_data_01.py"]
     file_output = [
-        "sampledata.parquet",
+        "data_1996_2012.parquet",
         ]
     targets = [DATA_DIR / file for file in file_output]
     actdict = {
     'actions': [
     "ipython ./src/load_option_data_01.py"
+    ], 
+    "targets": targets,
+    "file_dep": file_dep,
+    'clean': True,
+    }
+    return actdict
+
+def task_filter_appendix_B(): 
+
+
+    file_dep = [ "./src/filter_option_data_01.py", DATA_DIR / "data_1996_2012.parquet"]
+    targets = [
+        OUTPUT_DIR / "tableB1.tex", DATA_DIR / "data_1996_2012_appendixB.parquet",
+        ]
+    actdict = {
+    'actions': [
+    "ipython ./src/filter_option_data_01.py"
     ], 
     "targets": targets,
     "file_dep": file_dep,
