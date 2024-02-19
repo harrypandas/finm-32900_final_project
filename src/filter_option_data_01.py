@@ -4,11 +4,18 @@ import wrds
 import config
 from pathlib import Path 
 
+import bsm_pricer
+from scipy.optimize import minimize
 
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 
-
+def getLengths(df): 
+	test1 = df['cp_flag'].value_counts().to_dict()
+	test1C = test1['C']
+	test1P = test1['P'] 
+	test1L = len(df)
+	return test1L, test1C, test1P
 
 
 def fixStrike(df): 
@@ -17,29 +24,123 @@ def fixStrike(df):
 
 def getSecPrice(df): 
 	df['sec_price'] = (df['open'] + df['close'])/2
+	df['mnyns'] = df['strike_price']/df['sec_price']
 	return df 
 
+# def implied_volatility(row):
+#     if row['cp_flag'] == 'C':
+#         objective_function = lambda sigma:  (bsm_pricer.european_call_price(row['sec_price'], row['strike_price'],
+#         	row['tb_m3']/(100*365),(row['exdate'] - row['date']).total_seconds()/(24*60*60), 
+#         	sigma) - row['best_bid'])**2
+#     elif row['cp_flag'] == 'P':
+#         objective_function = lambda sigma: (bsm_pricer.european_put_price(row['sec_price'], row['strike_price'],
+#         	row['tb_m3']/(100*365),(row['exdate'] - row['date']).total_seconds()/(24*60*60), 
+#         	sigma) - row['best_bid'])**2
+#     else:
+#         raise ValueError("Invalid option type. Use 'C' or 'P'.")
+
+#     result = minimize(objective_function, 0.2, bounds=[(0, None)])
+#     return result.x[0]
+
+# def bsm_volatility(df): 
+# 	df['BSM_sig'] = df.apply(implied_volatility, axis=1)
+# 	# df['BSM_sig'] = df.apply(bsm_pricer.european_sigma(df['best_bid'], 
+# 	# 	df['sec_price'], df['strike_price'], df['tb_m3']/(100*365), (df['exdate'] - df['date']) ,type = df[] ), 
+# 	# 		axis = 1)
+# 	return df 
+
+
 def delete_identical_filter(df):
-	columns_to_check = ['cp_flag', 'strike_price','date', 'exdate', 'option_price']
+	#remove identical options (type, strike, experiation date, price)
+	#price is defined on the buy side - so use best_bid?
+	columns_to_check = ['cp_flag', 'strike_price','date', 'exdate', 'best_bid']
 	df = df.drop_duplicates(subset=columns_to_check, keep='first')
 	return df	
 
-def appendixBfilter_level1(df): 
-	#remove identical options (type, strike, experiation date, price)
-	#price is defined on the buy side - so use best_bid?
-
-	# df = df.drop_duplicates(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate', 'best_bid'])
-
-	df = delete_identical_filter(df)
+def delete_identical_but_price_filter(df): 
 
 	#some are identical (type, strike, maturity, date) but different prices. 
 	#KEEP closest to TBill based implied volatility of moneyness neighbors 
 	#delete others 
 
 
-	#Remove quotes of Bid = 0 
+	#Get Bools of duplicated row: 
+	bool_Dup = df.duplicated(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'], keep = False)
+
+	#remove duplicated 
+	df_noDup = df[~bool_Dup]
+
+	#grab duplicates 
+	df_Dup = df[bool_Dup]
+	df_Dup = df_Dup.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
+
+	##find moneyness neighbors
+	huntlist = ['secid', 'cp_flag', 'date', 'exdate']
+	mask = df.set_index(huntlist).index.isin(df_Dup.set_index(huntlist).index)
+
+	#all of the moneyness neighbors: 
+	df_Neigh = df[mask]
+	df_Neigh = df_Neigh.reset_index(drop =True)
+
+	#in the money neighbors: 
+	m1 = df_Neigh.groupby(by = huntlist).apply(lambda x: ((x['mnyns']-1)**2).idxmin())
+	dMon = df_Neigh.loc[m1]
+	dMon['mon_vola'] = dMon['impl_volatility']
+	dMonSub = dMon[huntlist + ['mon_vola']]
+
+	##Join the ITM volatility with the correct option: 
+	df_Join = pd.merge(df_Dup, dMonSub, on = huntlist, how = 'inner')
+	df_Join['impl_volatility2'] = df_Join['impl_volatility']
+	df_Join['impl_volatility2'].fillna(0, inplace=True)
+	#findimplied volatility being closest to ITM: 
+	idx_keep = df_Join.groupby(by = huntlist).apply(lambda x: ((x['impl_volatility2']-x['mon_vola']).abs()).idxmin())
+
+	#Tidy up the reduced subset of duplicates
+	df_reduced= df_Join.loc[idx_keep]
+	df_reduced = df_reduced.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop=True)
+	df_reduced.drop(['impl_volatility2', 'mon_vola'], axis = 1, inplace = True)
+
+	#Combine the OG dataframe with No Duplicates with the reduced subset of duplicates
+	df = pd.concat([df_noDup, df_reduced], ignore_index = True)
+	df = df.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
+
 
 	return df 
+
+def delete_zero_bid_filter(df): 
+	df = df[df['best_bid'] != 0.0]
+	return df 
+
+def delete_zero_volume_filter(df): 
+	df = df[df['volume'] != 0.0]
+	return df 
+
+
+def appendixBfilter_level1(df): 
+
+	message = f" 	||  Total || Calls || Puts \\n "
+	tot0,call0, put0 = getLengths(df)
+	message = message + f"Starting || {tot0}|| {call0} || {put0} \\n "
+
+	df = delete_identical_filter(df)
+	tot1, call1, put1 = getLengths(df)
+	message = message + f"Identical || {tot1-tot0}|| {call1-call0} || {put1-put0} \\n "
+
+
+	df = delete_identical_but_price_filter(df)
+	tot2,call2, put2 = getLengths(df)
+	message = message + f"Identical but price|| {tot2-tot1}|| {call2-call1} || {put2-put1} \\n "
+
+	df = delete_zero_bid_filter(df)
+	tot3,call3, put3 = getLengths(df)
+	message = message + f"Bid = 0 || {tot3-tot2}|| {call3-call2} || {put3-put2} \\n "
+
+	df = delete_zero_volume_filter(df)
+	tot4,call4, put4 = getLengths(df)
+	message = message + f"Volume = 0 || {tot4-tot3}|| {call4-call3} || {put4-put3} \\n "
+
+	message = message + f"Final || {tot4}|| {call4} || {put4} \\n "
+	return df, message
 
 
 def appendixBfilter_level2(df): 
@@ -91,17 +192,29 @@ def group54port(df):
 	return df 
 
 
+
+
 if __name__ == "__main__": 
 	save_path = "./../data/sampledata.parquet"
 	df = pd.read_parquet(save_path)
 	df = fixStrike(df)
 	df = getSecPrice(df)
 	#duplicate 
-	df = pd.concat([df, df], axis = 0 )
-	dfB1 = appendixBfilter_level1(df)
-	dfB1b = dfB1.drop_duplicates(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'])
+	# df = pd.concat([df, df], axis = 0 )
 
-	dg = dfB1[dfB1.duplicated(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'], keep = False)]
-	dg.sort_values(by = 'date')
 
-	
+
+	dfB1, mess = appendixBfilter_level1(df)
+	print(mess)
+
+	''' 
+			||  Total || Calls || Puts \\n "
+	Starting || 3410580|| 1704220 || 1706360 \\n 
+	Identical || -3	|| -2 || -1 \\n 
+	Identical but price|| -7|| -3 || -4 \\n 
+	Bid = 0 || -272078|| -152680 || -119398 \\n 
+	Volume = 0 || -2093744|| -1122939 || -970805 \\n 
+	Final || 1044748|| 428596 || 616152 \\n 
+
+
+	'''
