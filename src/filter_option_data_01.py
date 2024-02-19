@@ -7,6 +7,8 @@ from pathlib import Path
 import bsm_pricer
 from scipy.optimize import minimize
 
+import load_option_data_01 
+
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 
@@ -198,9 +200,8 @@ def group54port(df):
 
 
 if __name__ == "__main__": 
-	save_path = DATA_DIR / "data_1996_2012.parquet"
-	#./../data/sampledata.parquet"
-	df = pd.read_parquet(save_path)
+	
+	df = load_option_data_01.load_all_optm_data()
 	df = fixStrike(df)
 	df = getSecPrice(df)
 	#duplicate 
