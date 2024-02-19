@@ -22,8 +22,8 @@ from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-DATA_DIR = config('DATA_DIR', default=(BASE_DIR / 'data'), cast=Path)
-OUTPUT_DIR = config('OUTPUT_DIR', default=(BASE_DIR / 'output'), cast=Path)
+DATA_DIR = BASE_DIR / config('DATA_DIR', default=(BASE_DIR / 'data'), cast=Path)
+OUTPUT_DIR = BASE_DIR / config('OUTPUT_DIR', default=(BASE_DIR / 'output'), cast=Path)
 WRDS_USERNAME = config("WRDS_USERNAME", default="")
 
 START_DATE = config("START_DATE", default="2017-01-01")
