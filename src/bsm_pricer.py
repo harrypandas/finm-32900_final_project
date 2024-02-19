@@ -136,6 +136,25 @@ def calc_implied_volatility(market_price, S, K, T, r, option_type, tol=1e-12, ma
         
 
 
+def calc_option_elasticity(delta, option_price, underlying_price, option_type='call'):
+    """
+    Calculate the elasticity of an option.
+
+    Parameters:
+    - delta (float): The delta of the option, representing the rate of change of the option price with respect to changes in the underlying asset's price. Delta of a put must be negative. 
+    - option_price (float): The current price of the option.
+    - underlying_price (float): The current price of the underlying asset.
+
+    Returns:
+    - float: The elasticity of the option.
+    """
+    
+    elasticity = delta * (underlying_price / option_price)
+    return elasticity
+
+
+
+
 if __name__=='__main__':
     # take inputs from user
     S = float(input("Enter the current price of the underlying asset: "))

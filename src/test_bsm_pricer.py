@@ -65,3 +65,24 @@ def test_calc_implied_volatility():
     expected_output = 0.6468780610638603
     
     assert abs(bsm_pricer.calc_implied_volatility(**kwargs) - expected_output) < 1e-10
+    
+def test_calc_option_elasticity():
+    """
+    Test the bsm_pricer.calc_option_elasticity() function.
+    """
+
+    kwargs = {
+        "delta": -0.5,
+        "option_price": 30,
+        "option_type": "put",
+        "underlying_price": 100,
+    }
+
+    # Expected output:
+    # Option elasticity: 1.6666666666666667
+    expected_output = -1.6666666666666667
+    elasticity = bsm_pricer.calc_option_elasticity(**kwargs)
+    assert (abs(elasticity - expected_output) < 1e-12) and (elasticity > 1 if kwargs["option_type"] == "call" else elasticity < -1)
+
+    
+    
