@@ -230,12 +230,27 @@ def pull_Year_Range(wrds_username = WRDS_USERNAME, yearStart = 1996, yearEnd = 1
 	dlist = []
 	for year in range(yearStart, yearEnd + 1): 
 		print(year)
-		dftemp =pull_Opt_Sec_info(wrds_username = wrds_username, year = year, end = end)
+		dftemp = pull_Opt_Sec_info(wrds_username = wrds_username, year = year, end = end)
 		dlist.append(dftemp)
 
 	df = pd.concat(dlist, axis = 0)
 	return df
 
+def load_all_optm_data(data_dir=DATA_DIR,
+						wrds_username=WRDS_USERNAME,
+						yearStart=1996,
+						yearEnd=2012):
+	
+	file_path = Path(data_dir) / "pulled" / "data_1996_2012.parquet"
+
+	if file_path.exists():
+		df = pd.read_parquet(file_path)
+	else:
+		df = pull_Year_Range(wrds_username=wrds_username, yearStart=yearStart, yearEnd=yearEnd)
+		file_dir = file_path.parent
+		file_dir.mkdir(parents=True, exist_ok=True)
+		df.to_parquet(file_path)
+	return df
 
 
 def pull_Opt_Sec_info_WRDS(wrds_username = WRDS_USERNAME, start = '1996-01-04', end = '2012-01-31'): 
@@ -272,10 +287,15 @@ if __name__ == "__main__":
 	#a = pull_FedH15()
 	#b = pull_Opt_Sec_info_WRDS()
 	## Run with doit 
-	df = pull_Year_Range(yearStart = 1996, yearEnd = 2012)
-	df.reset_index(drop = True)
+	# df = pull_Year_Range(yearStart = 1996, yearEnd = 2012)
+	# df.reset_index(drop = True)
+
+	_ = load_all_optm_data(data_dir=DATA_DIR,
+					   wrds_username=WRDS_USERNAME, 
+					   yearStart=1996, 
+					   yearEnd=2012)
 
 
-	save_path = DATA_DIR.joinpath( "data_1996_2012.parquet")
-	df.to_parquet(save_path)
+	# save_path = DATA_DIR.joinpath( "data_1996_2012.parquet")
+	# df.to_parquet(save_path)
 	
