@@ -117,8 +117,10 @@ def delete_zero_volume_filter(df):
 
 
 def appendixBfilter_level1(df): 
+
+	message = f" 	||  Total || Calls || Puts \\n "
 	tot0,call0, put0 = getLengths(df)
-	message = f"Starting || {tot0}|| {call0} || {put0} \\n "
+	message = message + f"Starting || {tot0}|| {call0} || {put0} \\n "
 
 	df = delete_identical_filter(df)
 	tot1, call1, put1 = getLengths(df)
@@ -206,6 +208,7 @@ if __name__ == "__main__":
 	print(mess)
 
 	''' 
+			||  Total || Calls || Puts \\n "
 	Starting || 3410580|| 1704220 || 1706360 \\n 
 	Identical || -3	|| -2 || -1 \\n 
 	Identical but price|| -7|| -3 || -4 \\n 
