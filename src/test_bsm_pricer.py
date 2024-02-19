@@ -44,4 +44,3 @@ def test_bsm_put_price():
     expected_output = 0.0007023491441319144
     
     assert (bsm_pricer.european_put_price(**kwargs) - expected_output) < 1e-10
-    

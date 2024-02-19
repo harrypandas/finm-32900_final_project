@@ -199,7 +199,7 @@ def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996, end = '2012-01
 			b.open, b.close, 
 			a.cp_flag, 
 			a.exdate, a.impl_volatility, c.tb_m3, a.volume,
-			a.best_bid, a.best_offer, a.strike_price
+			a.best_bid, a.best_offer, a.strike_price, a.contract_size
 		FROM
 			optionm_all.opprcd{year} AS a
 		JOIN 
@@ -222,6 +222,9 @@ def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996, end = '2012-01
 	db.close()
 	return optm
 
+
+
+
 def pull_Year_Range(wrds_username = WRDS_USERNAME, yearStart = 1996, yearEnd = 1998, end = '2012-01-31'):
 
 	dlist = []
@@ -238,7 +241,7 @@ def load_all_optm_data(data_dir=DATA_DIR,
 						yearStart=1996,
 						yearEnd=2012):
 	
-	file_path = Path(data_dir) / "pulled" / "sampledata.parquet"
+	file_path = Path(data_dir) / "pulled" / "data_1996_2012.parquet"
 
 	if file_path.exists():
 		df = pd.read_parquet(file_path)
@@ -249,12 +252,40 @@ def load_all_optm_data(data_dir=DATA_DIR,
 		df.to_parquet(file_path)
 	return df
 
+
+def pull_Opt_Sec_info_WRDS(wrds_username = WRDS_USERNAME, start = '1996-01-04', end = '2012-01-31'): 
+	#use PostgreSQL
+	#https://wrds-www.wharton.upenn.edu/pages/get-data/option-suite-wrds/us-option-level-output/
+	sql_query = f"""
+		SELECT  
+			a.*, c.tb_m3
+		FROM
+			Beta.wrdsapps_optionsig  AS a
+
+		JOIN 
+			frb_all.rates_daily AS c ON c.date = a.date 
+
+		WHERE
+			(a.secid = 108105) 
+		AND 
+			(a.date <= \'{end}\') 
+		AND 
+			(a.date >= \'{start}\')
+		LIMIT 1000
+	""" 
+	#LIMIT 1000
+	db = wrds.Connection(wrds_username=wrds_username)
+	optm = db.raw_sql(sql_query, date_cols = ["date", "exdate"])
+	db.close()
+	return optm
+
+
 if __name__ == "__main__": 
 	#x = pull_Option_info()
 	#y = pull_Security_info()
 	#z = pull_Opt_Sec_info()
 	#a = pull_FedH15()
-
+	#b = pull_Opt_Sec_info_WRDS()
 	## Run with doit 
 	# df = pull_Year_Range(yearStart = 1996, yearEnd = 2012)
 	# df.reset_index(drop = True)
@@ -264,6 +295,7 @@ if __name__ == "__main__":
 					   yearStart=1996, 
 					   yearEnd=2012)
 
-	# save_path = DATA_DIR.joinpath( "sampledata.parquet")
+
+	# save_path = DATA_DIR.joinpath( "data_1996_2012.parquet")
 	# df.to_parquet(save_path)
 	

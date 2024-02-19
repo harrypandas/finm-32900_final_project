@@ -15,7 +15,7 @@ def getLengths(df):
 	test1C = test1['C']
 	test1P = test1['P'] 
 	test1L = len(df)
-	return test1L, test1C, test1P
+	return np.array([test1L, test1C, test1P])
 
 
 def fixStrike(df): 
@@ -23,7 +23,7 @@ def fixStrike(df):
 	return df 
 
 def getSecPrice(df): 
-	df['sec_price'] = (df['open'] + df['close'])/2
+	df['sec_price'] =  df['close']
 	df['mnyns'] = df['strike_price']/df['sec_price']
 	return df 
 
@@ -52,8 +52,8 @@ def getSecPrice(df):
 
 def delete_identical_filter(df):
 	#remove identical options (type, strike, experiation date, price)
-	#price is defined on the buy side - so use best_bid?
-	columns_to_check = ['cp_flag', 'strike_price','date', 'exdate', 'best_bid']
+	#price is defined on the buy side - so use best_offer: 2/19/24 discussion with Viren
+	columns_to_check = ['secid', 'cp_flag', 'strike_price','date', 'exdate', 'best_offer']
 	df = df.drop_duplicates(subset=columns_to_check, keep='first')
 	return df	
 
@@ -117,30 +117,33 @@ def delete_zero_volume_filter(df):
 
 
 def appendixBfilter_level1(df): 
+	columns = ["Total", "Calls", "Puts"]
+	df_sum = pd.DataFrame(columns = columns)
+	L0 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L0)), name = 'Starting' ))
 
-	message = f" 	||  Total || Calls || Puts \\n "
-	tot0,call0, put0 = getLengths(df)
-	message = message + f"Starting || {tot0}|| {call0} || {put0} \\n "
+	
 
 	df = delete_identical_filter(df)
-	tot1, call1, put1 = getLengths(df)
-	message = message + f"Identical || {tot1-tot0}|| {call1-call0} || {put1-put0} \\n "
+	L1 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L0-L1)), name = 'Identical' ))
 
 
 	df = delete_identical_but_price_filter(df)
-	tot2,call2, put2 = getLengths(df)
-	message = message + f"Identical but price|| {tot2-tot1}|| {call2-call1} || {put2-put1} \\n "
+	L2 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L1-L2)), name = 'Identical but Price' ))
+
 
 	df = delete_zero_bid_filter(df)
-	tot3,call3, put3 = getLengths(df)
-	message = message + f"Bid = 0 || {tot3-tot2}|| {call3-call2} || {put3-put2} \\n "
+	L3 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L2-L3)), name = 'Bid = 0' ))
 
 	df = delete_zero_volume_filter(df)
-	tot4,call4, put4 = getLengths(df)
-	message = message + f"Volume = 0 || {tot4-tot3}|| {call4-call3} || {put4-put3} \\n "
-
-	message = message + f"Final || {tot4}|| {call4} || {put4} \\n "
-	return df, message
+	L4 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L3-L4)), name = 'Volume = 0' ))
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L4)), name = 'Final' ))
+	
+	return df, df_sum
 
 
 def appendixBfilter_level2(df): 
@@ -195,7 +198,8 @@ def group54port(df):
 
 
 if __name__ == "__main__": 
-	save_path = "./../data/sampledata.parquet"
+	save_path = DATA_DIR / "data_1996_2012.parquet"
+	#./../data/sampledata.parquet"
 	df = pd.read_parquet(save_path)
 	df = fixStrike(df)
 	df = getSecPrice(df)
@@ -204,17 +208,32 @@ if __name__ == "__main__":
 
 
 
-	dfB1, mess = appendixBfilter_level1(df)
-	print(mess)
+	dfB1, tableB1 = appendixBfilter_level1(df)
+	
 
 	''' 
-			||  Total || Calls || Puts \\n "
-	Starting || 3410580|| 1704220 || 1706360 \\n 
-	Identical || -3	|| -2 || -1 \\n 
-	Identical but price|| -7|| -3 || -4 \\n 
-	Bid = 0 || -272078|| -152680 || -119398 \\n 
-	Volume = 0 || -2093744|| -1122939 || -970805 \\n 
-	Final || 1044748|| 428596 || 616152 \\n 
+	                        Total     Calls     Puts
+	Starting              3410580   1704220  1706360
+	Identical                  -3        -2       -1
+	Identical but Price        -7        -3       -4
+	Bid = 0               -272078   -152680  -119398
+	Volume = 0           -2093744  -1122939  -970805
 
 
 	'''
+	
+	
+
+	save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
+	df.to_parquet(save_path)
+
+	## Suppress scientific notation and limit to 3 decimal places
+	# Sets display, but doesn't affect formatting to LaTeX
+	pd.set_option('display.float_format', lambda x: '%.2f' % x)
+	# Sets format for printing to LaTeX
+	float_format_func = lambda x: '{:.2f}'.format(x)
+	tableB_2012 = tableB1.to_latex(float_format=float_format_func)
+
+	path = OUTPUT_DIR / f'tableB1.tex'
+	with open(path, "w") as text_file:
+	    text_file.write(tableB_2012)
