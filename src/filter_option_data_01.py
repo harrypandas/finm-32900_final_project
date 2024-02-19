@@ -15,7 +15,7 @@ def getLengths(df):
 	test1C = test1['C']
 	test1P = test1['P'] 
 	test1L = len(df)
-	return test1L, test1C, test1P
+	return np.array([test1L, test1C, test1P])
 
 
 def fixStrike(df): 
@@ -117,30 +117,33 @@ def delete_zero_volume_filter(df):
 
 
 def appendixBfilter_level1(df): 
+	columns = ["Total", "Calls", "Puts"]
+	df_sum = pd.DataFrame(columns = columns)
+	L0 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L0)), name = 'Starting' ))
 
-	message = f" 	||  Total || Calls || Puts \\n "
-	tot0,call0, put0 = getLengths(df)
-	message = message + f"Starting || {tot0}|| {call0} || {put0} \\n "
+	
 
 	df = delete_identical_filter(df)
-	tot1, call1, put1 = getLengths(df)
-	message = message + f"Identical || {tot1-tot0}|| {call1-call0} || {put1-put0} \\n "
+	L1 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L1-L0)), name = 'Identical' ))
 
 
 	df = delete_identical_but_price_filter(df)
-	tot2,call2, put2 = getLengths(df)
-	message = message + f"Identical but price|| {tot2-tot1}|| {call2-call1} || {put2-put1} \\n "
+	L2 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L2-L1)), name = 'Identical but Price' ))
+
 
 	df = delete_zero_bid_filter(df)
-	tot3,call3, put3 = getLengths(df)
-	message = message + f"Bid = 0 || {tot3-tot2}|| {call3-call2} || {put3-put2} \\n "
+	L3 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L3-L2)), name = 'Bid = 0' ))
 
 	df = delete_zero_volume_filter(df)
-	tot4,call4, put4 = getLengths(df)
-	message = message + f"Volume = 0 || {tot4-tot3}|| {call4-call3} || {put4-put3} \\n "
+	L4 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L4-L3)), name = 'Volume = 0' ))
 
-	message = message + f"Final || {tot4}|| {call4} || {put4} \\n "
-	return df, message
+	
+	return df, df_sum
 
 
 def appendixBfilter_level2(df): 
@@ -208,13 +211,12 @@ if __name__ == "__main__":
 	print(mess)
 
 	''' 
-			||  Total || Calls || Puts \\n "
-	Starting || 3410580|| 1704220 || 1706360 \\n 
-	Identical || -3	|| -2 || -1 \\n 
-	Identical but price|| -7|| -3 || -4 \\n 
-	Bid = 0 || -272078|| -152680 || -119398 \\n 
-	Volume = 0 || -2093744|| -1122939 || -970805 \\n 
-	Final || 1044748|| 428596 || 616152 \\n 
+	                        Total     Calls     Puts
+	Starting              3410580   1704220  1706360
+	Identical                  -3        -2       -1
+	Identical but Price        -7        -3       -4
+	Bid = 0               -272078   -152680  -119398
+	Volume = 0           -2093744  -1122939  -970805
 
 
 	'''
