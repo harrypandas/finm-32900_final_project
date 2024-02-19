@@ -4,11 +4,18 @@ import wrds
 import config
 from pathlib import Path 
 
+import bsm_pricer
+from scipy.optimize import minimize
 
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 
-
+def getLengths(df): 
+	test1 = df['cp_flag'].value_counts().to_dict()
+	test1C = test1['C']
+	test1P = test1['P'] 
+	test1L = len(df)
+	return np.array([test1L, test1C, test1P])
 
 
 def fixStrike(df): 
@@ -16,30 +23,127 @@ def fixStrike(df):
 	return df 
 
 def getSecPrice(df): 
-	df['sec_price'] = (df['open'] + df['close'])/2
+	df['sec_price'] =  df['close']
+	df['mnyns'] = df['strike_price']/df['sec_price']
 	return df 
 
+# def implied_volatility(row):
+#     if row['cp_flag'] == 'C':
+#         objective_function = lambda sigma:  (bsm_pricer.european_call_price(row['sec_price'], row['strike_price'],
+#         	row['tb_m3']/(100*365),(row['exdate'] - row['date']).total_seconds()/(24*60*60), 
+#         	sigma) - row['best_bid'])**2
+#     elif row['cp_flag'] == 'P':
+#         objective_function = lambda sigma: (bsm_pricer.european_put_price(row['sec_price'], row['strike_price'],
+#         	row['tb_m3']/(100*365),(row['exdate'] - row['date']).total_seconds()/(24*60*60), 
+#         	sigma) - row['best_bid'])**2
+#     else:
+#         raise ValueError("Invalid option type. Use 'C' or 'P'.")
+
+#     result = minimize(objective_function, 0.2, bounds=[(0, None)])
+#     return result.x[0]
+
+# def bsm_volatility(df): 
+# 	df['BSM_sig'] = df.apply(implied_volatility, axis=1)
+# 	# df['BSM_sig'] = df.apply(bsm_pricer.european_sigma(df['best_bid'], 
+# 	# 	df['sec_price'], df['strike_price'], df['tb_m3']/(100*365), (df['exdate'] - df['date']) ,type = df[] ), 
+# 	# 		axis = 1)
+# 	return df 
+
+
 def delete_identical_filter(df):
-	columns_to_check = ['cp_flag', 'strike_price','date', 'exdate', 'option_price']
+	#remove identical options (type, strike, experiation date, price)
+	#price is defined on the buy side - so use best_offer: 2/19/24 discussion with Viren
+	columns_to_check = ['secid', 'cp_flag', 'strike_price','date', 'exdate', 'best_offer']
 	df = df.drop_duplicates(subset=columns_to_check, keep='first')
 	return df	
 
-def appendixBfilter_level1(df): 
-	#remove identical options (type, strike, experiation date, price)
-	#price is defined on the buy side - so use best_bid?
-
-	# df = df.drop_duplicates(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate', 'best_bid'])
-
-	df = delete_identical_filter(df)
+def delete_identical_but_price_filter(df): 
 
 	#some are identical (type, strike, maturity, date) but different prices. 
 	#KEEP closest to TBill based implied volatility of moneyness neighbors 
 	#delete others 
 
 
-	#Remove quotes of Bid = 0 
+	#Get Bools of duplicated row: 
+	bool_Dup = df.duplicated(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'], keep = False)
+
+	#remove duplicated 
+	df_noDup = df[~bool_Dup]
+
+	#grab duplicates 
+	df_Dup = df[bool_Dup]
+	df_Dup = df_Dup.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
+
+	##find moneyness neighbors
+	huntlist = ['secid', 'cp_flag', 'date', 'exdate']
+	mask = df.set_index(huntlist).index.isin(df_Dup.set_index(huntlist).index)
+
+	#all of the moneyness neighbors: 
+	df_Neigh = df[mask]
+	df_Neigh = df_Neigh.reset_index(drop =True)
+
+	#in the money neighbors: 
+	m1 = df_Neigh.groupby(by = huntlist).apply(lambda x: ((x['mnyns']-1)**2).idxmin())
+	dMon = df_Neigh.loc[m1]
+	dMon['mon_vola'] = dMon['impl_volatility']
+	dMonSub = dMon[huntlist + ['mon_vola']]
+
+	##Join the ITM volatility with the correct option: 
+	df_Join = pd.merge(df_Dup, dMonSub, on = huntlist, how = 'inner')
+	df_Join['impl_volatility2'] = df_Join['impl_volatility']
+	df_Join['impl_volatility2'].fillna(0, inplace=True)
+	#findimplied volatility being closest to ITM: 
+	idx_keep = df_Join.groupby(by = huntlist).apply(lambda x: ((x['impl_volatility2']-x['mon_vola']).abs()).idxmin())
+
+	#Tidy up the reduced subset of duplicates
+	df_reduced= df_Join.loc[idx_keep]
+	df_reduced = df_reduced.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop=True)
+	df_reduced.drop(['impl_volatility2', 'mon_vola'], axis = 1, inplace = True)
+
+	#Combine the OG dataframe with No Duplicates with the reduced subset of duplicates
+	df = pd.concat([df_noDup, df_reduced], ignore_index = True)
+	df = df.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
+
 
 	return df 
+
+def delete_zero_bid_filter(df): 
+	df = df[df['best_bid'] != 0.0]
+	return df 
+
+def delete_zero_volume_filter(df): 
+	df = df[df['volume'] != 0.0]
+	return df 
+
+
+def appendixBfilter_level1(df): 
+	columns = ["Total", "Calls", "Puts"]
+	df_sum = pd.DataFrame(columns = columns)
+	L0 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L0)), name = 'Starting' ))
+
+	
+
+	df = delete_identical_filter(df)
+	L1 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L0-L1)), name = 'Identical' ))
+
+
+	df = delete_identical_but_price_filter(df)
+	L2 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L1-L2)), name = 'Identical but Price' ))
+
+
+	df = delete_zero_bid_filter(df)
+	L3 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L2-L3)), name = 'Bid = 0' ))
+
+	df = delete_zero_volume_filter(df)
+	L4 = getLengths(df)
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L3-L4)), name = 'Volume = 0' ))
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L4)), name = 'Final' ))
+	
+	return df, df_sum
 
 
 def appendixBfilter_level2(df): 
@@ -91,17 +195,45 @@ def group54port(df):
 	return df 
 
 
+
+
 if __name__ == "__main__": 
-	save_path = "./../data/sampledata.parquet"
+	save_path = DATA_DIR / "data_1996_2012.parquet"
+	#./../data/sampledata.parquet"
 	df = pd.read_parquet(save_path)
 	df = fixStrike(df)
 	df = getSecPrice(df)
 	#duplicate 
-	df = pd.concat([df, df], axis = 0 )
-	dfB1 = appendixBfilter_level1(df)
-	dfB1b = dfB1.drop_duplicates(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'])
+	# df = pd.concat([df, df], axis = 0 )
 
-	dg = dfB1[dfB1.duplicated(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'], keep = False)]
-	dg.sort_values(by = 'date')
 
+
+	dfB1, tableB1 = appendixBfilter_level1(df)
 	
+
+	''' 
+	                        Total     Calls     Puts
+	Starting              3410580   1704220  1706360
+	Identical                  -3        -2       -1
+	Identical but Price        -7        -3       -4
+	Bid = 0               -272078   -152680  -119398
+	Volume = 0           -2093744  -1122939  -970805
+
+
+	'''
+	
+	
+
+	save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
+	df.to_parquet(save_path)
+
+	## Suppress scientific notation and limit to 3 decimal places
+	# Sets display, but doesn't affect formatting to LaTeX
+	pd.set_option('display.float_format', lambda x: '%.2f' % x)
+	# Sets format for printing to LaTeX
+	float_format_func = lambda x: '{:.2f}'.format(x)
+	tableB_2012 = tableB1.to_latex(float_format=float_format_func)
+
+	path = OUTPUT_DIR / f'tableB1.tex'
+	with open(path, "w") as text_file:
+	    text_file.write(tableB_2012)

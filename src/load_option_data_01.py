@@ -123,7 +123,7 @@ def pull_FedH15(wrds_username = WRDS_USERNAME):
 	db.close()
 	return optm
 
-def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996): 
+def pull_Opt_Sec_info0(wrds_username = WRDS_USERNAME, year = 1996): 
 	#use PostgreSQL
 	#https://wrds-www.wharton.upenn.edu/pages/support/manuals-and-overviews/optionmetrics/wrds-overview-optionmetrics/
 	#https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/opprcd2023/ 
@@ -179,16 +179,105 @@ def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996):
 	return optm
 
 
-def pull_Year_Range(wrds_username = WRDS_USERNAME, yearStart = 1996, yearEnd = 1998):
+def pull_Opt_Sec_info(wrds_username = WRDS_USERNAME, year = 1996, end = '2012-01-31'): 
+	#use PostgreSQL
+	#https://wrds-www.wharton.upenn.edu/pages/support/manuals-and-overviews/optionmetrics/wrds-overview-optionmetrics/
+	#https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/opprcd2023/ 
+	#https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/secprd1996/
+
+	#https://wrds-www.wharton.upenn.edu/data-dictionary/frb_all/rates_daily/
+
+	#a.secid, a.date,
+
+	'''
+
+		AND
+	'''
+	sql_query = f"""
+		SELECT 
+			b.secid, b.date,  
+			b.open, b.close, 
+			a.cp_flag, 
+			a.exdate, a.impl_volatility, c.tb_m3, a.volume,
+			a.best_bid, a.best_offer, a.strike_price, a.contract_size
+		FROM
+			optionm_all.opprcd{year} AS a
+		JOIN 
+			optionm_all.secprd{year} AS b ON a.date = b.date AND a.secid = b.secid
+
+		JOIN 
+			frb_all.rates_daily AS c ON c.date = a.date 
+
+		WHERE
+			(a.secid = 108105) 
+		AND 
+			(a.date <= \'{end}\') 
+		AND 
+			(a.date >= '1996-01-04')
+		
+	""" 
+	#LIMIT 1000
+	db = wrds.Connection(wrds_username=wrds_username)
+	optm = db.raw_sql(sql_query, date_cols = ["date", "exdate"])
+	db.close()
+	return optm
+
+
+
+
+def pull_Year_Range(wrds_username = WRDS_USERNAME, yearStart = 1996, yearEnd = 1998, end = '2012-01-31'):
 
 	dlist = []
 	for year in range(yearStart, yearEnd + 1): 
 		print(year)
-		dftemp =pull_Opt_Sec_info(wrds_username = wrds_username, year = year)
+		dftemp = pull_Opt_Sec_info(wrds_username = wrds_username, year = year, end = end)
 		dlist.append(dftemp)
 
 	df = pd.concat(dlist, axis = 0)
 	return df
+
+def load_all_optm_data(data_dir=DATA_DIR,
+						wrds_username=WRDS_USERNAME,
+						yearStart=1996,
+						yearEnd=2012):
+	
+	file_path = Path(data_dir) / "pulled" / "data_1996_2012.parquet"
+
+	if file_path.exists():
+		df = pd.read_parquet(file_path)
+	else:
+		df = pull_Year_Range(wrds_username=wrds_username, yearStart=yearStart, yearEnd=yearEnd)
+		file_dir = file_path.parent
+		file_dir.mkdir(parents=True, exist_ok=True)
+		df.to_parquet(file_path)
+	return df
+
+
+def pull_Opt_Sec_info_WRDS(wrds_username = WRDS_USERNAME, start = '1996-01-04', end = '2012-01-31'): 
+	#use PostgreSQL
+	#https://wrds-www.wharton.upenn.edu/pages/get-data/option-suite-wrds/us-option-level-output/
+	sql_query = f"""
+		SELECT  
+			a.*, c.tb_m3
+		FROM
+			Beta.wrdsapps_optionsig  AS a
+
+		JOIN 
+			frb_all.rates_daily AS c ON c.date = a.date 
+
+		WHERE
+			(a.secid = 108105) 
+		AND 
+			(a.date <= \'{end}\') 
+		AND 
+			(a.date >= \'{start}\')
+		LIMIT 1000
+	""" 
+	#LIMIT 1000
+	db = wrds.Connection(wrds_username=wrds_username)
+	optm = db.raw_sql(sql_query, date_cols = ["date", "exdate"])
+	db.close()
+	return optm
 
 
 if __name__ == "__main__": 
@@ -196,8 +285,17 @@ if __name__ == "__main__":
 	#y = pull_Security_info()
 	#z = pull_Opt_Sec_info()
 	#a = pull_FedH15()
-	df = pull_Year_Range()
-	df.reset_index(drop = True)
-	save_path = DATA_DIR.joinpath( "sampledata.parquet")
-	df.to_parquet(save_path)
+	#b = pull_Opt_Sec_info_WRDS()
+	## Run with doit 
+	# df = pull_Year_Range(yearStart = 1996, yearEnd = 2012)
+	# df.reset_index(drop = True)
+
+	_ = load_all_optm_data(data_dir=DATA_DIR,
+					   wrds_username=WRDS_USERNAME, 
+					   yearStart=1996, 
+					   yearEnd=2012)
+
+
+	# save_path = DATA_DIR.joinpath( "data_1996_2012.parquet")
+	# df.to_parquet(save_path)
 	
