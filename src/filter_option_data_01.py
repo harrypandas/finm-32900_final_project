@@ -23,7 +23,7 @@ def fixStrike(df):
 	return df 
 
 def getSecPrice(df): 
-	df['sec_price'] = (df['open'] + df['close'])/2
+	df['sec_price'] =  df['close']
 	df['mnyns'] = df['strike_price']/df['sec_price']
 	return df 
 
@@ -52,8 +52,8 @@ def getSecPrice(df):
 
 def delete_identical_filter(df):
 	#remove identical options (type, strike, experiation date, price)
-	#price is defined on the buy side - so use best_bid?
-	columns_to_check = ['cp_flag', 'strike_price','date', 'exdate', 'best_bid']
+	#price is defined on the buy side - so use best_offer: 2/19/24 discussion with Viren
+	columns_to_check = ['secid', 'cp_flag', 'strike_price','date', 'exdate', 'best_offer']
 	df = df.drop_duplicates(subset=columns_to_check, keep='first')
 	return df	
 
@@ -126,22 +126,22 @@ def appendixBfilter_level1(df):
 
 	df = delete_identical_filter(df)
 	L1 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L1-L0)), name = 'Identical' ))
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L0-L1)), name = 'Identical' ))
 
 
 	df = delete_identical_but_price_filter(df)
 	L2 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L2-L1)), name = 'Identical but Price' ))
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L1-L2)), name = 'Identical but Price' ))
 
 
 	df = delete_zero_bid_filter(df)
 	L3 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L3-L2)), name = 'Bid = 0' ))
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L2-L3)), name = 'Bid = 0' ))
 
 	df = delete_zero_volume_filter(df)
 	L4 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L4-L3)), name = 'Volume = 0' ))
-
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L3-L4)), name = 'Volume = 0' ))
+	df_sum = df_sum._append(pd.Series( dict(zip(columns, L4)), name = 'Final' ))
 	
 	return df, df_sum
 
@@ -198,7 +198,8 @@ def group54port(df):
 
 
 if __name__ == "__main__": 
-	save_path = "./../data/sampledata.parquet"
+	save_path = DATA_DIR / "data_1996_2012.parquet"
+	#./../data/sampledata.parquet"
 	df = pd.read_parquet(save_path)
 	df = fixStrike(df)
 	df = getSecPrice(df)
@@ -207,8 +208,8 @@ if __name__ == "__main__":
 
 
 
-	dfB1, mess = appendixBfilter_level1(df)
-	print(mess)
+	dfB1, tableB1 = appendixBfilter_level1(df)
+	
 
 	''' 
 	                        Total     Calls     Puts
@@ -220,3 +221,19 @@ if __name__ == "__main__":
 
 
 	'''
+	
+	
+
+	save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
+	df.to_parquet(save_path)
+
+	## Suppress scientific notation and limit to 3 decimal places
+	# Sets display, but doesn't affect formatting to LaTeX
+	pd.set_option('display.float_format', lambda x: '%.2f' % x)
+	# Sets format for printing to LaTeX
+	float_format_func = lambda x: '{:.2f}'.format(x)
+	tableB_2012 = tableB1.to_latex(float_format=float_format_func)
+
+	path = OUTPUT_DIR / f'tableB1.tex'
+	with open(path, "w") as text_file:
+	    text_file.write(tableB_2012)
