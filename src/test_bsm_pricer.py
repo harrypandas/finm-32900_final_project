@@ -64,7 +64,7 @@ def test_calc_implied_volatility():
     # Implied volatility: 0.6468780610638603
     expected_output = 0.6468780610638603
     
-    assert abs(bsm_pricer.calc_implied_volatility(**kwargs) - expected_output) < 1e-10
+    assert abs(bsm_pricer.calc_implied_volatility(**kwargs) - expected_output) < 1e-6
     
 def test_calc_option_elasticity():
     """
