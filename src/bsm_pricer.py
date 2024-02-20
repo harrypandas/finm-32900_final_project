@@ -113,22 +113,39 @@ def iv_objective(sigma, market_price, S, K, T, r, option_type):
 
 
 # Function to calculate implied volatility
-def calc_implied_volatility(market_price, S, K, T, r, option_type, tol=1e-12, max_iter=1000):
+def calc_implied_volatility(market_price, S, K, T, r, option_type, tol=1e-12, max_iter=1000, initial_guess=0.05, bounds=(0.00001, 5.0)):
     """
-    Calculate implied volatility using scipy.optimize.minimize.
+    Calculates the implied volatility of an option using the Black-Scholes-Merton model.
     
+    Parameters:
+    - market_price (float): The market price of the option.
+    - S (float): The current price of the underlying asset.
+    - K (float): The strike price of the option.
+    - T (float): The time to expiration of the option in years.
+    - r (float): The risk-free interest rate.
+    - option_type (str): The type of the option ('call' or 'put').
+    - tol (float, optional): The tolerance for the optimization algorithm. Defaults to 1e-12.
+    - max_iter (int, optional): The maximum number of iterations for the optimization algorithm. Defaults to 1000.
+    - initial_guess (float, optional): The initial guess for the volatility. Defaults to 0.05.
+    - bounds (tuple, optional): The lower and upper bounds for the volatility. Defaults to (0.00001, 5.0).
+    
+    Returns:
+    - float: The implied volatility of the option.
+    
+    Raises:
+    - ValueError: If the optimization algorithm fails to converge.
     """
+    
     # Initial guess for volatility
-    initial_guess = [0.5]
+    initial_guess = [initial_guess]
     
     # Bounds for volatility (must be positive)
-    bounds = [(0.00001, 5.0)]
+    bounds = [bounds]
     
     # Minimize the objective function
     result = minimize(iv_objective, initial_guess, args=(market_price, S, K, T, r, option_type),
                       bounds=bounds, method='L-BFGS-B', options={'eps': 1e-15, 'gtol': 1e-15})
     
-    #print('result:', result)
     if result.success:
         return result.x[0]  # Return the optimized volatility
     else:
