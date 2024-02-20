@@ -103,9 +103,9 @@ def iv_objective(sigma, market_price, S, K, T, r, option_type):
     Objective function to calculate implied volatility.
     """
     
-    if option_type=='call':
+    if option_type.lower() in ['call', 'c']:
         theoretical_price = european_call_price(S=S, K=K, T=T, r=r, sigma=sigma)
-    elif option_type=='put':
+    elif option_type.lower() in ['put', 'p']:
         theoretical_price = european_put_price(S=S, K=K, T=T, r=r, sigma=sigma)
         
     # print(option_type, 'price:',theoretical_price, sigma, market_price, (theoretical_price - market_price)**2)
@@ -123,7 +123,7 @@ def calc_implied_volatility(market_price, S, K, T, r, option_type, tol=1e-12, ma
     - K (float): The strike price of the option.
     - T (float): The time to expiration of the option in years.
     - r (float): The risk-free interest rate.
-    - option_type (str): The type of the option ('call' or 'put').
+    - option_type (str): The type of the option ('call'/'c' or 'put'/'p').
     - tol (float, optional): The tolerance for the optimization algorithm. Defaults to 1e-12.
     - max_iter (int, optional): The maximum number of iterations for the optimization algorithm. Defaults to 1000.
     - initial_guess (float, optional): The initial guess for the volatility. Defaults to 0.05.
