@@ -35,7 +35,7 @@ if __name__ == "__main__":
 	# Print or save the LaTeX table
 	print(latex_table)
 
-
+	tableString = 
 	path = OUTPUT_DIR / f'tableB1_2012.tex'
 	with open(path, "w") as text_file:
 	    text_file.write(latex_table)
