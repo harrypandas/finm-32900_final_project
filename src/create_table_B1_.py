@@ -12,7 +12,8 @@ import load_option_data_01
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 
-
+def convertStr(x): 
+	return x if type(x) == type('str') else f"{x:,.0f}"
 
 
 if __name__ == "__main__": 
@@ -71,21 +72,31 @@ if __name__ == "__main__":
 			else: 
 				stepstr = ' '
 			rowname =  group2012.iloc[row].name
-
+			rowname = rowname if rowname.find('All') == -1 else 'All'
 			
-			g12_del = group2012.iloc[row]['Deleted'] 
-			g12_rem = group2012.iloc[row]['Remaining']
+			g12_del = group2012.iloc[row]['Deleted']
+			g12_delS = convertStr(g12_del)
 
-			g23_del = group2023.iloc[row]['Deleted'] 
+			g12_rem = group2012.iloc[row]['Remaining']
+			g12_remS = convertStr(g12_rem)
+
+			g23_del = group2023.iloc[row]['Deleted']
+			g23_delS = convertStr(g23_del)
+
 			g23_rem = group2023.iloc[row]['Remaining']
+			g23_remS = convertStr(g23_rem)
 
 			gT_del = g12_del + g23_del
+			gT_delS = convertStr(gT_del)
+
 			gT_rem = g12_rem + g23_rem
+			gT_remS = convertStr(gT_rem)
+
 			rowString = f"""
 				{stepstr} & & {rowname} & &
-				{g12_del} & & {g12_rem} & &
-				{g23_del} & & {g23_rem} & &
-				{gT_del} & & {gT_rem} {r"\\"}
+				{g12_delS} & & {g12_remS} & &
+				{g23_delS} & & {g23_remS} & &
+				{gT_delS} & & {gT_remS} {r"\\"}
 			""" 
 			tableString = tableString + rowString
 

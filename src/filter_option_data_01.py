@@ -153,13 +153,13 @@ def appendixBfilter_level1(df):
 	df_B1 = pd.DataFrame(index = rows_B)
 	df_B1['Calls'] = ['Starting', float('nan'), L0[1]]
 	df_B1['Puts'] = ['Starting', float('nan'), L0[2]]
-	df_B1['Totals'] = ['Starting', float('nan'), L0[0]]
+	df_B1['All0'] = ['Starting', float('nan'), L0[0]]
 
 	df_B1['Identical'] = ['Level 1 filters', (L0-L1)[0],float('nan')]
 	df_B1['Identical except price'] = ['Level 1 filters', (L1-L2)[0],float('nan')]
 	df_B1['Bid = 0'] = ['Level 1 filters', (L2-L3)[0],float('nan')]
 	df_B1['Volume = 0'] = ['Level 1 filters', (L3-L4)[0],float('nan')]
-	df_B1['All'] = ['Level 1 filters', float('nan'), L4[1]]
+	df_B1['All1'] = ['Level 1 filters', float('nan'), L4[1]]
 
 	df_B1 = df_B1.T
 	df_sum = df_sum.T
