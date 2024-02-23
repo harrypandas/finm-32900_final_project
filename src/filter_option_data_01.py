@@ -119,33 +119,51 @@ def delete_zero_volume_filter(df):
 
 
 def appendixBfilter_level1(df): 
-	columns = ["Total", "Calls", "Puts"]
-	df_sum = pd.DataFrame(columns = columns)
-	L0 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L0)), name = 'Starting' ))
 
-	
+
+
+	rows = ["Total", "Calls", "Puts"]
+	df_sum = pd.DataFrame(index = rows)
+
+	L0 = getLengths(df)
+	df_sum['Starting'] = L0
+
 
 	df = delete_identical_filter(df)
 	L1 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L0-L1)), name = 'Identical' ))
+	df_sum['Identical'] =  L0-L1
 
 
 	df = delete_identical_but_price_filter(df)
 	L2 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L1-L2)), name = 'Identical but Price' ))
+	df_sum['Identical but Price'] = L1-L2
 
 
 	df = delete_zero_bid_filter(df)
 	L3 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L2-L3)), name = 'Bid = 0' ))
+	df_sum['Bid = 0'] =  L2-L3
 
 	df = delete_zero_volume_filter(df)
 	L4 = getLengths(df)
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L3-L4)), name = 'Volume = 0' ))
-	df_sum = df_sum._append(pd.Series( dict(zip(columns, L4)), name = 'Final' ))
+	df_sum['Volume = 0'] =   L3-L4
+	df_sum['Final'] =  L4
 	
-	return df, df_sum
+
+	rows_B = ['Step', 'Deleted', 'Remaining']
+	df_B1 = pd.DataFrame(index = rows_B)
+	df_B1['Calls'] = ['Starting', float('nan'), L0[1]]
+	df_B1['Puts'] = ['Starting', float('nan'), L0[2]]
+	df_B1['All0'] = ['Starting', float('nan'), L0[0]]
+
+	df_B1['Identical'] = ['Level 1 filters', (L0-L1)[0],float('nan')]
+	df_B1['Identical except price'] = ['Level 1 filters', (L1-L2)[0],float('nan')]
+	df_B1['Bid = 0'] = ['Level 1 filters', (L2-L3)[0],float('nan')]
+	df_B1['Volume = 0'] = ['Level 1 filters', (L3-L4)[0],float('nan')]
+	df_B1['All1'] = ['Level 1 filters', float('nan'), L4[1]]
+
+	df_B1 = df_B1.T
+	df_sum = df_sum.T
+	return df, df_sum, df_B1
 
 
 def appendixBfilter_level2(df): 
@@ -209,7 +227,7 @@ if __name__ == "__main__":
 
 
 
-	dfB1, tableB1 = appendixBfilter_level1(df)
+	dfB1, df_sum, df_tableB1 = appendixBfilter_level1(df)
 	
 
 	''' 
@@ -228,13 +246,20 @@ if __name__ == "__main__":
 	save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
 	df.to_parquet(save_path)
 
+	df_tableB1.to_parquet(OUTPUT_DIR.joinpath("tableB1_2012.parquet"))
+
+
 	## Suppress scientific notation and limit to 3 decimal places
 	# Sets display, but doesn't affect formatting to LaTeX
 	pd.set_option('display.float_format', lambda x: '%.2f' % x)
 	# Sets format for printing to LaTeX
 	float_format_func = lambda x: '{:.2f}'.format(x)
-	tableB_2012 = tableB1.to_latex(float_format=float_format_func)
+	tableB_2012 = df_tableB1.to_latex(float_format=float_format_func)
+
+
 
 	path = OUTPUT_DIR / f'tableB1_2012.tex'
 	with open(path, "w") as text_file:
 	    text_file.write(tableB_2012)
+
+
