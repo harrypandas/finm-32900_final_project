@@ -20,9 +20,9 @@ def getLengths(df):
 	return np.array([test1L, test1C, test1P])
 
 
-def fixStrike(df): 
-	df['strike_price'] = df['strike_price']/1000
-	return df 
+# def fixStrike(df): 
+# 	df['strike_price'] = df['strike_price']/1000
+# 	return df 
 
 def getSecPrice(df): 
 	df['sec_price'] =  df['close']
@@ -119,7 +119,7 @@ def delete_zero_volume_filter(df):
 
 
 def appendixBfilter_level1(df): 
-	df = fixStrike(df)
+	# df = fixStrike(df)
 	df = getSecPrice(df)
 
 	rows = ["Total", "Calls", "Puts"]
