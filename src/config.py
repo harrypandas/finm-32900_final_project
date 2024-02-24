@@ -26,8 +26,12 @@ DATA_DIR = BASE_DIR / config('DATA_DIR', default=(BASE_DIR / 'data'), cast=Path)
 OUTPUT_DIR = BASE_DIR / config('OUTPUT_DIR', default=(BASE_DIR / 'output'), cast=Path)
 WRDS_USERNAME = config("WRDS_USERNAME", default="")
 
-START_DATE = config("START_DATE", default="2017-01-01")
-END_DATE = config("END_DATE", default="2022-12-31")
+START_DATE_01 = config("START_DATE_01", default="1996-01-01")
+END_DATE_01 = config("END_DATE_01", default="2012-01-31")
+
+
+START_DATE_02 = config("START_DATE_02", default="2012-02-01")
+END_DATE_02 = config("END_DATE_02", default="2023-12-31")
 
 if __name__ == "__main__":
     

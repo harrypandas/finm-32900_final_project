@@ -12,6 +12,13 @@ import load_option_data_01
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 
+
+START_DATE_01 =config.START_DATE_01
+END_DATE_01 = config.END_DATE_01
+
+START_DATE_02 =config.START_DATE_02
+END_DATE_02 = config.END_DATE_02
+
 def getLengths(df): 
 	test1 = df['cp_flag'].value_counts().to_dict()
 	test1C = test1['C']
