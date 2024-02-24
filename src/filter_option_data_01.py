@@ -27,36 +27,10 @@ def getLengths(df):
 	return np.array([test1L, test1C, test1P])
 
 
-# def fixStrike(df): 
-# 	df['strike_price'] = df['strike_price']/1000
-# 	return df 
-
 def getSecPrice(df): 
 	df['sec_price'] =  df['close']
 	df['mnyns'] = df['strike_price']/df['sec_price']
 	return df 
-
-# def implied_volatility(row):
-#     if row['cp_flag'] == 'C':
-#         objective_function = lambda sigma:  (bsm_pricer.european_call_price(row['sec_price'], row['strike_price'],
-#         	row['tb_m3']/(100*365),(row['exdate'] - row['date']).total_seconds()/(24*60*60), 
-#         	sigma) - row['best_bid'])**2
-#     elif row['cp_flag'] == 'P':
-#         objective_function = lambda sigma: (bsm_pricer.european_put_price(row['sec_price'], row['strike_price'],
-#         	row['tb_m3']/(100*365),(row['exdate'] - row['date']).total_seconds()/(24*60*60), 
-#         	sigma) - row['best_bid'])**2
-#     else:
-#         raise ValueError("Invalid option type. Use 'C' or 'P'.")
-
-#     result = minimize(objective_function, 0.2, bounds=[(0, None)])
-#     return result.x[0]
-
-# def bsm_volatility(df): 
-# 	df['BSM_sig'] = df.apply(implied_volatility, axis=1)
-# 	# df['BSM_sig'] = df.apply(bsm_pricer.european_sigma(df['best_bid'], 
-# 	# 	df['sec_price'], df['strike_price'], df['tb_m3']/(100*365), (df['exdate'] - df['date']) ,type = df[] ), 
-# 	# 		axis = 1)
-# 	return df 
 
 
 def delete_identical_filter(df):
@@ -173,54 +147,11 @@ def appendixBfilter_level1(df):
 	return df, df_sum, df_B1
 
 
-def appendixBfilter_level2(df): 
-	#remove options not within range of (7,180)
+def wrap_appendixBfilter_level1(df): 
+	dfB1, df_sum, df_tableB1 = appendixBfilter_level1(df)
+	return
 
-	#remove options with implied volatility outside of [0.05,1.00]
-
-
-	#remove options with moneyness outside of [.8, 1.2] #Done by SQL
-
-	#looks like they calculated implied interest rate??? to get volatility?
-
-	return df 
-
-def appendixBfilter_level3(df): 
-	#remove implied volatility outliers??? 
-
-	#Ensure Put-call parity 
-
-	return df 
-def group54port(df): 
-
-	#throw into portfolio dictionary that can be accessed as portfolios['C']['30']['0.975']
-	cpBools = df['cp_flag'] == 'C'
-	dfc = df[cpBools]
-	dfp = df[-cpBools]
-
-	center_days = np.array([30.0, 60.0, 90.0])
-	bw_days = 10.0
-		
-	center_money = np.linspace(0.9, 1.1, 9)
-	bw_money = 0.0125 
-
-	daykeys =  [f'{day:.0f}' for day in center_days]
-	moneykeys = [f'{mon:.3f}' for mon in center_money]
-
-
-	dfdict = dict(zip(['C','P'] , [dict(
-			zip(daykeys, 
-				[dict(
-					zip(
-						moneykeys, [ list() for _ in range(len(moneykeys))]
-						) 
-					) for _ in range(len(daykeys))]
-				)
-			) for _ in range(2)] 
-	))
 	
-	return df 
-
 if __name__ == "__main__": 
 	
 	df = load_option_data_01.load_all_optm_data()
@@ -248,8 +179,6 @@ if __name__ == "__main__":
 	save_path = DATA_DIR.joinpath( f"pulled/data_{startYearMonth}_{endYearMonth}_L1filter.parquet")
 	dfB1.to_parquet(save_path)
 
-	save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
-	df.to_parquet(save_path)
 	
 	# save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
 	# dfB1.to_parquet(save_path)

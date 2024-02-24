@@ -9,6 +9,12 @@ OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 WRDS_USERNAME = config.WRDS_USERNAME
 
+START_DATE_01 =config.START_DATE_01
+END_DATE_01 = config.END_DATE_01
+
+START_DATE_02 =config.START_DATE_02
+END_DATE_02 = config.END_DATE_02
+
 
 #https://wrds-www.wharton.upenn.edu/pages/get-data/optionmetrics/ivy-db-us/options/option-prices/
 description_opt_Met = {
@@ -150,13 +156,13 @@ if __name__ == "__main__":
 
 	data_199601_201201 = load_all_optm_data(data_dir=DATA_DIR,
 											wrds_username=WRDS_USERNAME, 
-											startDate="1996-01-01",
-											endDate="2012-01-31")
+											startDate=START_DATE_01,
+											endDate=END_DATE_01)
 
 	data_201202_202312 = load_all_optm_data(data_dir=DATA_DIR,
 										 	wrds_username=WRDS_USERNAME, 
-											startDate="2012-02-01",
-											endDate="2023-12-31")
+											startDate=START_DATE_02,
+											endDate=END_DATE_02)
 										
 	# save_path = DATA_DIR.joinpath( "data_1996_2012.parquet")
 	# df.to_parquet(save_path)
