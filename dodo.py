@@ -10,8 +10,20 @@ from pathlib import Path
 from doit.tools import run_once
 import shutil
 
+
+
+from load_option_data_01 import run_load_all_optm_data 
+
+
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
+WRDS_USERNAME = config.WRDS_USERNAME
+
+START_DATE_01 =config.START_DATE_01
+END_DATE_01 = config.END_DATE_01
+
+START_DATE_02 =config.START_DATE_02
+END_DATE_02 = config.END_DATE_02
 
 # fmt: off
 ## Helper functions for automatic execution of Jupyter notebooks
@@ -49,17 +61,40 @@ def task_run_config():
     }
     return actdict
 
-def task_load_and_save_data(): 
+# def task_load_and_save_data(): 
+
+
+#     file_dep = [ "./src/load_option_data_01.py"]
+#     file_output = [
+#         "pulled/data_1996-01_2012-01.parquet",
+#         ]
+#     targets = [DATA_DIR  / file for file in file_output]
+#     actdict = {
+#     'actions': [
+#     "ipython ./src/load_option_data_01.py"
+#     ], 
+#     "targets": targets,
+#     "file_dep": file_dep,
+#     'clean': True,
+#     "verbosity": 2, # Print everything immediately. This is important in
+#         # case WRDS asks for credentials.
+#     }
+#     return actdict
+
+def task_load_and_save_data_01(): 
 
 
     file_dep = [ "./src/load_option_data_01.py"]
     file_output = [
-        "pulled/data_1996-01_2012-01.parquet",
+        f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet",
         ]
     targets = [DATA_DIR  / file for file in file_output]
     actdict = {
     'actions': [
-    "ipython ./src/load_option_data_01.py"
+    (run_load_all_optm_data, (f"{DATA_DIR}",
+											f"{WRDS_USERNAME}", 
+											START_DATE_01,
+											"1998-01-10"))
     ], 
     "targets": targets,
     "file_dep": file_dep,
@@ -69,10 +104,10 @@ def task_load_and_save_data():
     }
     return actdict
 
-def task_filter_appendix_B(): 
+def task_filter_appendix_B_01(): 
 
 
-    file_dep = [ "./src/filter_option_data_01.py", DATA_DIR / "pulled/data_1996-01_2012-01.parquet"]
+    file_dep = [ "./src/filter_option_data_01.py", DATA_DIR / f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet"]
     targets = [
         OUTPUT_DIR / "tableB1.tex", DATA_DIR / "data_1996_2012_appendixB.parquet",
         ]
