@@ -244,10 +244,11 @@ def load_all_optm_data(data_dir=DATA_DIR,
 		df = pd.read_parquet(file_path)
 	else:
 		df = pull_Year_Range(wrds_username=wrds_username, yearStart=yearStart, yearEnd=yearEnd, start=startDate, end=endDate)
-		df = clean_optm_data(df)
 		file_dir = file_path.parent
 		file_dir.mkdir(parents=True, exist_ok=True)
 		df.to_parquet(file_path)
+		
+	df = clean_optm_data(df)
 	return df
 
 def clean_optm_data(df):
@@ -255,7 +256,6 @@ def clean_optm_data(df):
 	df['tb_m3'] = df['tb_m3']/100
 	df['date'] = pd.to_datetime(df['date'])
 	return df
-
 
 def pull_Opt_Sec_info_WRDS(wrds_username = WRDS_USERNAME, start = '1996-01-01', end = '2012-01-31'): 
 	#use PostgreSQL
