@@ -54,7 +54,7 @@ def task_load_and_save_data():
 
     file_dep = [ "./src/load_option_data_01.py"]
     file_output = [
-        "pulled/data_1996_2012.parquet",
+        "pulled/data_1996-01_2012-01.parquet",
         ]
     targets = [DATA_DIR  / file for file in file_output]
     actdict = {
@@ -72,7 +72,7 @@ def task_load_and_save_data():
 def task_filter_appendix_B(): 
 
 
-    file_dep = [ "./src/filter_option_data_01.py", DATA_DIR / "pulled/data_1996_2012.parquet"]
+    file_dep = [ "./src/filter_option_data_01.py", DATA_DIR / "pulled/data_1996-01_2012-01.parquet"]
     targets = [
         OUTPUT_DIR / "tableB1.tex", DATA_DIR / "data_1996_2012_appendixB.parquet",
         ]
