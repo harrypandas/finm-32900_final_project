@@ -119,8 +119,8 @@ def delete_zero_volume_filter(df):
 
 
 def appendixBfilter_level1(df): 
-
-
+	df = fixStrike(df)
+	df = getSecPrice(df)
 
 	rows = ["Total", "Calls", "Puts"]
 	df_sum = pd.DataFrame(index = rows)
@@ -143,7 +143,7 @@ def appendixBfilter_level1(df):
 	L3 = getLengths(df)
 	df_sum['Bid = 0'] =  L2-L3
 
-	df = delete_zero_volume_filter(df)
+	# df = delete_zero_volume_filter(df)
 	L4 = getLengths(df)
 	df_sum['Volume = 0'] =   L3-L4
 	df_sum['Final'] =  L4
@@ -214,18 +214,12 @@ def group54port(df):
 	
 	return df 
 
-
-
-
 if __name__ == "__main__": 
 	
 	df = load_option_data_01.load_all_optm_data()
-	df = fixStrike(df)
-	df = getSecPrice(df)
+
 	#duplicate 
 	# df = pd.concat([df, df], axis = 0 )
-
-
 
 	dfB1, df_sum, df_tableB1 = appendixBfilter_level1(df)
 	
@@ -241,10 +235,14 @@ if __name__ == "__main__":
 
 	'''
 	
+	startYearMonth = dfB1['date'].min().year*100 + dfB1['date'].min().month
+	endYearMonth = dfB1['date'].max().year*100 + dfB1['date'].max().month
 	
+	save_path = DATA_DIR.joinpath( f"pulled/data_{startYearMonth}_{endYearMonth}_L1filter.parquet")
+	dfB1.to_parquet(save_path)
 
-	save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
-	df.to_parquet(save_path)
+	# save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
+	# dfB1.to_parquet(save_path)
 
 	df_tableB1.to_parquet(OUTPUT_DIR.joinpath("tableB1_2012.parquet"))
 
