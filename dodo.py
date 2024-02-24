@@ -64,6 +64,8 @@ def task_load_and_save_data():
     "targets": targets,
     "file_dep": file_dep,
     'clean': True,
+    "verbosity": 2, # Print everything immediately. This is important in
+        # case WRDS asks for credentials.
     }
     return actdict
 
@@ -78,7 +80,7 @@ def task_filter_appendix_B():
     'actions': [
     "ipython ./src/filter_option_data_01.py"
     ], 
-    "targets": targets,
+   # "targets": targets,
     "file_dep": file_dep,
     'clean': True,
     }
