@@ -94,7 +94,7 @@ def task_load_and_save_data_01():
     (run_load_all_optm_data, (f"{DATA_DIR}",
 											f"{WRDS_USERNAME}", 
 											START_DATE_01,
-											"1998-01-10"))
+											END_DATE_01))
     ], 
     "targets": targets,
     "file_dep": file_dep,
@@ -103,6 +103,32 @@ def task_load_and_save_data_01():
         # case WRDS asks for credentials.
     }
     return actdict
+
+
+def task_load_and_save_data_02(): 
+
+
+    file_dep = [ "./src/load_option_data_01.py"]
+    file_output = [
+        f"pulled/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
+        ]
+    targets = [DATA_DIR  / file for file in file_output]
+    actdict = {
+    'actions': [
+    (run_load_all_optm_data, (f"{DATA_DIR}",
+											f"{WRDS_USERNAME}", 
+											START_DATE_02,
+											END_DATE_02))
+    ], 
+    "targets": targets,
+    "file_dep": file_dep,
+    'clean': True,
+    "verbosity": 2, # Print everything immediately. This is important in
+        # case WRDS asks for credentials.
+    }
+    return actdict
+
+
 
 def task_filter_appendix_B_01(): 
 
