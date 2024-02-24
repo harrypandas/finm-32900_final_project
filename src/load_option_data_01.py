@@ -244,9 +244,16 @@ def load_all_optm_data(data_dir=DATA_DIR,
 		df = pd.read_parquet(file_path)
 	else:
 		df = pull_Year_Range(wrds_username=wrds_username, yearStart=yearStart, yearEnd=yearEnd, start=startDate, end=endDate)
+		df = clean_optm_data(df)
 		file_dir = file_path.parent
 		file_dir.mkdir(parents=True, exist_ok=True)
 		df.to_parquet(file_path)
+	return df
+
+def clean_optm_data(df):
+	df['strike_price'] = df['strike_price']/1000
+	df['tb_m3'] = df['tb_m3']/100
+	df['date'] = pd.to_datetime(df['date'])
 	return df
 
 
