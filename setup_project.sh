@@ -24,6 +24,6 @@ for folder in "${folders[@]}"; do
     mkdir -p "$folder"
 done
 
-touch README.md .gitignore .env
+#touch README.md .gitignore .env
 
 echo "Folder structure created successfully!"

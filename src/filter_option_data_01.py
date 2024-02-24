@@ -241,6 +241,9 @@ if __name__ == "__main__":
 	save_path = DATA_DIR.joinpath( f"pulled/data_{startYearMonth}_{endYearMonth}_L1filter.parquet")
 	dfB1.to_parquet(save_path)
 
+	save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
+	df.to_parquet(save_path)
+	# @ihammock try this: df_tableB1 = df_tableB1.reset_index().rename(columns={'index': 'Substep'}).set_index(['Step', 'Substep'])
 	# save_path = DATA_DIR.joinpath( "data_1996_2012_appendixB.parquet")
 	# dfB1.to_parquet(save_path)
 
