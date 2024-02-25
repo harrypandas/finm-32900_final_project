@@ -25,6 +25,9 @@ def test_load_option_data_shape():
     # assert that the number of rows is the same as the original
     assert df.shape[0] == expected, "The number of rows should return 3,410,580"
 
+    with pytest.raises(FileNotFoundError):
+        l1.load_all_optm_data(data_dir="invalid_directory")
+
 def test_load_option_data_columns():
     """Test that the data has the correct columns after pulling from wrds using load function.
     """
