@@ -40,3 +40,16 @@ def test_calc_mnyns():
         expected_output.round(4)
     )
 
+def test_l2_filters_validity(df):
+    """Test that the data has the correct shape after applying filters from filter_option_data_02.
+    """
+    # call function to load data
+    df = l1.load_all_optm_data(DATA_DIR)
+    df = f1.appendixBfilter_level1(df)[0]
+    # apply level 2 filters
+    df = f2.apply_l2_filters(df)
+
+    # expected result
+    expected = 1_076_744
+    # assert that the number of rows is the same as the original
+    assert df.shape[0] == expected, "The number of rows should return 1,076,744"

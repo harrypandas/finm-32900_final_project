@@ -64,6 +64,11 @@ def filter_implied_interest_rate(df):
     """
     return df
 
+def filter_unable_compute_iv(df):
+    """Unable to Compute IV Filter: Filter options where implied volatility cannot be computed.
+    """
+    return df
+
 def apply_l2_filters(df):
     """Apply all level 2 filters to the dataframe.
     """
@@ -71,6 +76,7 @@ def apply_l2_filters(df):
     df = filter_iv(df)
     df = filter_moneyness(df)
     df = filter_implied_interest_rate(df)
+    df = filter_unable_compute_iv(df)
     return df
 
 if __name__ == "__main__": 
