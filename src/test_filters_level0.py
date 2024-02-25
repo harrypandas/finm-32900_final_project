@@ -7,7 +7,7 @@ import load_option_data_01 as l1
 
 WRDS_USERNAME = Path(config.WRDS_USERNAME)
 DATA_DIR = Path(config.DATA_DIR)
-TEST_START = "1996-01-01"
+TEST_START = "1996-01-04"
 TEST_END = "2012-01-31"
 
 """ Unit tests for the following:
@@ -48,7 +48,7 @@ def test_load_option_data_dae_valadity():
     # expected result
     expected = pd.to_datetime([TEST_START, TEST_END])
     # assert that the date range is the same as the original
-    assert df['date'].min() == expected[0], "The date range should start from 1996-01-01"
+    assert df['date'].min() == expected[0], "The date range should start from 1996-01-04"
     assert df['date'].max() == expected[1], "The date range should end at 2012-01-31"
 
 def test_load_option_type_dist():

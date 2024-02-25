@@ -12,6 +12,7 @@ TEST_END = "2012-01-31"
 
 df_test = l1.load_all_optm_data(DATA_DIR, startDate = TEST_START, endDate = TEST_END )
 df_test = f1.getSecPrice(df_test)
+df_test = f1.calc_moneyness(df_test)
 
 df_test_ID = f1.delete_identical_filter(df_test)
 
