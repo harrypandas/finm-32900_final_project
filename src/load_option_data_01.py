@@ -125,6 +125,7 @@ def load_all_optm_data(data_dir=DATA_DIR,
 def clean_optm_data(df):
 	df['strike_price'] = df['strike_price']/1000
 	df['tb_m3'] = df['tb_m3']/100
+	df['tb_m3'].ffill(inplace=True)
 	df['date'] = pd.to_datetime(df['date'])
 	return df
 
