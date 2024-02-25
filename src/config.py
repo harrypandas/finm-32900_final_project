@@ -31,7 +31,7 @@ END_DATE_01 = config("END_DATE_01", default="2012-01-31")
 
 
 START_DATE_02 = config("START_DATE_02", default="2012-02-01")
-END_DATE_02 = config("END_DATE_02", default="2023-12-31")
+END_DATE_02 = config("END_DATE_02", default="2020-12-31")
 
 if __name__ == "__main__":
     

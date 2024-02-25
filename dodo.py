@@ -130,12 +130,18 @@ def task_load_and_save_data_02():
 
 
 
-def task_filter_appendix_B_01(): 
+def task_filter_appendix_B_Level01(): 
 
 
     file_dep = [ "./src/filter_option_data_01.py", DATA_DIR / f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet"]
     targets = [
-        OUTPUT_DIR / "tableB1.tex", DATA_DIR / "data_1996_2012_appendixB.parquet",
+        OUTPUT_DIR / f"tableB1_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet",
+
+        DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L1filter.parquet",
+
+        OUTPUT_DIR / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
+
+        DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L1filter.parquet",
         ]
     actdict = {
     'actions': [
@@ -144,21 +150,26 @@ def task_filter_appendix_B_01():
    # "targets": targets,
     "file_dep": file_dep,
     'clean': True,
+    "verbosity": 2,
     }
     return actdict
 
-def task_run_placeholderTables(): 
+def task_create_TableB1(): 
 
     #add file dep on data being made 
-    file_dep = [ "./src/pandas_to_latex_demo.py"]
+    file_dep = [ "./src/create_table_B1_.py", 
+    OUTPUT_DIR / f"tableB1_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet",
+    OUTPUT_DIR / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
+
+    ]
     file_output = [
-        "pandas_to_latex_simple_table1.tex",
+        "tableB1.tex",
         ]
     targets = [OUTPUT_DIR / file for file in file_output]
 
     actdict = {
     'actions': [
-    "ipython ./src/pandas_to_latex_demo.py",
+    "ipython ./src/create_table_B1_.py",
   
     ], 
     "targets": targets,
