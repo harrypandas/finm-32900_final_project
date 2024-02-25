@@ -12,28 +12,29 @@ import load_option_data_01
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 
+
+START_DATE_01 =config.START_DATE_01
+END_DATE_01 = config.END_DATE_01
+
+START_DATE_02 =config.START_DATE_02
+END_DATE_02 = config.END_DATE_02
+
+
+
 def convertStr(x): 
 	return x if type(x) == type('str') else f"{x:,.0f}"
 
 
 if __name__ == "__main__": 
 
-	tableB1_2012 = pd.read_parquet(Path(OUTPUT_DIR)  / "tableB1_2012.parquet")
+	tableB1_01 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet")
 
-	tableB1_2023 = pd.read_parquet(Path(OUTPUT_DIR)  / "tableB1_2012.parquet")
+	tableB1_02 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet")
 
 	step_order = ['Starting', 'Level 1 filters']
-
-	# Convert 'Step' to a categorical type with the specified order
-	tableB1_2012['Step'] = pd.Categorical(tableB1_2012['Step'], categories=step_order, ordered=True)
-
-	# Sort the DataFrame by the 'Step' column
-	tableB1_2012.sort_values(by='Step', inplace=True)
-	tableB1_2012 = tableB1_2012.replace({float('nan'): ''})
-
-	# Convert the DataFrame to LaTeX
-	latex_table = tableB1_2012[['Deleted', 'Remaining']].to_latex(index=True)
-
+	
+	tableB1_01 = tableB1_01.replace({float('nan'): ''})
+	tableB1_02 = tableB1_02.replace({float('nan'): ''})
 
 
 	tableString = r"""
@@ -41,8 +42,8 @@ if __name__ == "__main__":
     \begin{tabular}{*{4}{l} *{11}{r} }
        
         
-         \multicolumn{4}{c}{}  & \multicolumn{3}{c}{OptionMetrics: 2012}  &  \multicolumn{1}{c}{} & 
-         \multicolumn{3}{c}{OptionMetrics: 2023}&  \multicolumn{1}{c}{}  &
+         \multicolumn{4}{c}{}  & \multicolumn{3}{c}{OptionMetrics: """ + f'{START_DATE_01[:7]} to {END_DATE_01[:7]}' + r"""}  &  \multicolumn{1}{c}{} & 
+         \multicolumn{3}{c}{OptionMetrics:""" + f'{START_DATE_02[:7]} to {END_DATE_02[:7]}' + r"""}&  \multicolumn{1}{c}{}  &
           \multicolumn{3}{c}{Total}  \\
          \cline{5-7}
                   
@@ -64,26 +65,26 @@ if __name__ == "__main__":
 	    \end{tabular}
 	''' 
 	for step in step_order: 
-		group2012 = tableB1_2012[tableB1_2012['Step']==step]
-		group2023 = tableB1_2012[tableB1_2012['Step']==step]
-		for row in range(len(group2012)):
+		group01 = tableB1_01[tableB1_01['Step']==step]
+		group02 = tableB1_02[tableB1_02['Step']==step]
+		for row in range(len(group01)):
 			if row == 0: 
 				stepstr = step 
 			else: 
 				stepstr = ' '
-			rowname =  group2012.iloc[row].name
+			rowname =  group01.iloc[row].name
 			rowname = rowname if rowname.find('All') == -1 else 'All'
 			
-			g12_del = group2012.iloc[row]['Deleted']
+			g12_del = group01.iloc[row]['Deleted']
 			g12_delS = convertStr(g12_del)
 
-			g12_rem = group2012.iloc[row]['Remaining']
+			g12_rem = group01.iloc[row]['Remaining']
 			g12_remS = convertStr(g12_rem)
 
-			g23_del = group2023.iloc[row]['Deleted']
+			g23_del = group02.iloc[row]['Deleted']
 			g23_delS = convertStr(g23_del)
 
-			g23_rem = group2023.iloc[row]['Remaining']
+			g23_rem = group02.iloc[row]['Remaining']
 			g23_remS = convertStr(g23_rem)
 
 			gT_del = g12_del + g23_del
@@ -103,6 +104,6 @@ if __name__ == "__main__":
 
 	tableString = tableString + tableEnd
 
-	path = OUTPUT_DIR / f'tableB1_2012.tex'
+	path = OUTPUT_DIR / f'tableB1.tex'
 	with open(path, "w") as text_file:
 	    text_file.write(tableString)
