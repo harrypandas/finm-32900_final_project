@@ -26,9 +26,11 @@ def getLengths(df):
 
 def getSecPrice(df): 
 	df['sec_price'] =  df['close']
-	df['mnyns'] = df['strike_price']/df['sec_price']
-	return df 
+	return df
 
+def calc_moneyness(df):
+	df['mnyns'] = df['strike_price']/df['sec_price']
+	return df
 
 def delete_identical_filter(df):
 	#remove identical options (type, strike, experiation date, price)
@@ -112,10 +114,10 @@ def delete_zero_volume_filter(df):
 	#df = df[df['open_interest'] != 0.0]
 	return df 
 
-
 def appendixBfilter_level1(df): 
 	# df = fixStrike(df)
 	df = getSecPrice(df)
+	df = calc_moneyness(df)
 
 	rows = ["Total", "Calls", "Puts"]
 	df_sum = pd.DataFrame(index = rows)
