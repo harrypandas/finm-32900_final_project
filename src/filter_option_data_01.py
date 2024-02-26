@@ -148,8 +148,8 @@ def appendixBfilter_level1(df):
 
 	rows_B = ['Step', 'Deleted', 'Remaining']
 	df_B1 = pd.DataFrame(index = rows_B)
-	df_B1['Calls'] = ['Starting', float('nan'), L0[1]]
-	df_B1['Puts'] = ['Starting', float('nan'), L0[2]]
+	df_B1['Calls0'] = ['Starting', float('nan'), L0[1]]
+	df_B1['Puts0'] = ['Starting', float('nan'), L0[2]]
 	df_B1['All0'] = ['Starting', float('nan'), L0[0]]
 
 	df_B1['Identical'] = ['Level 1 filters', (L0-L1)[0],float('nan')]
@@ -176,7 +176,7 @@ def execute_appendixBfilter_level1(start=START_DATE_01, end=END_DATE_01):
 	
 	save_path = DATA_DIR.joinpath( f"intermediate/data_{start[:7]}_{end[:7]}_L1filter.parquet")
 	dfB1.to_parquet(save_path)
-	print(f"\nData {start}-{end}, Fitlered Level B1 saved to: {save_path}")
+	print(f"\nData {start}-{end}, Filtered Level B1 saved to: {save_path}")
 	 # @ihammock try this: df_tableB1 = df_tableB1.reset_index().rename(columns={'index': 'Substep'}).set_index(['Step', 'Substep'])
 	b1path = OUTPUT_DIR.joinpath(f"tableB1_{start[:7]}_{end[:7]}.parquet")
 	df_tableB1.to_parquet(b1path)
