@@ -28,7 +28,7 @@ def filter_time_to_maturity(df):
     df['time_to_maturity'] = calc_time_to_maturity(df)
 
     # calculate time to maturity in years >> df.time_to_matility_yrs
-    df['time_to_matility_yrs'] = calc_time_to_maturity_yrs(df)  
+    df['time_to_maturity_yrs'] = calc_time_to_maturity_yrs(df)  
 
     # remove options with less than 7 days to maturity or greater than 180 days to maturity
     df = df.loc[(df['time_to_maturity'] >= 7) & (df['time_to_maturity'] <= 180)].reset_index(drop=True)

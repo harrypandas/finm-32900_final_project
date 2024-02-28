@@ -24,17 +24,11 @@ END_DATE_02 = config.END_DATE_02
 def convertStr(x): 
 	return x if type(x) == type('str') else f"{x:,.0f}"
 
-
-if __name__ == "__main__": 
-
-	tableB1_01 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet")
-
-	tableB1_02 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet")
-
-	step_order = ['Starting', 'Level 1 filters']
+def createB1(T1, T2): 
+	step_order = ['Starting', 'Level 1 filters', 'Level 2 filters', 'Level 3 filters', 'Final']
 	
-	tableB1_01 = tableB1_01.replace({float('nan'): ''})
-	tableB1_02 = tableB1_02.replace({float('nan'): ''})
+	
+	
 
 
 	tableString = r"""
@@ -73,7 +67,9 @@ if __name__ == "__main__":
 			else: 
 				stepstr = ' '
 			rowname =  group01.iloc[row].name
-			rowname = rowname if rowname.find('All') == -1 else 'All'
+			rowname = 'All' if rowname.find('All') == 0 else rowname
+			rowname = 'Calls' if rowname.find('Calls') == 0 else rowname
+			rowname = 'Puts' if rowname.find('Puts') == 0 else rowname
 			
 			g12_del = group01.iloc[row]['Deleted']
 			g12_delS = convertStr(g12_del)
@@ -107,3 +103,14 @@ if __name__ == "__main__":
 	path = OUTPUT_DIR / f'tableB1.tex'
 	with open(path, "w") as text_file:
 	    text_file.write(tableString)
+
+if __name__ == "__main__": 
+
+	tableB1_01 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet")
+	tableB1_01 = tableB1_01.replace({float('nan'): ''})
+
+	# tableB1_02 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet")
+	# tableB1_02 = tableB1_02.replace({float('nan'): ''})
+	tableB1_02 = tableB1_01
+
+	createB1(tableB1_01, tableB1_02)

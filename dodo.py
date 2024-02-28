@@ -130,22 +130,36 @@ def task_load_and_save_data_02():
 
 
 
-def task_filter_appendix_B_Level01(): 
+def task_filter_appendix_B(): 
 
 
-    file_dep = [ "./src/filter_option_data_01.py", DATA_DIR / f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet"]
+    file_dep = [
+    "./src/filter_option_data_01.py", 
+    "./src/filter_option_data_02.py", 
+    "./src/filter_option_data_03.py", 
+    DATA_DIR / f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet", 
+    DATA_DIR / f"pulled/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
+    ]
     targets = [
         OUTPUT_DIR / f"tableB1_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet",
 
         DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L1filter.parquet",
 
+        DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L2filter.parquet",
+
+        DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
+
         OUTPUT_DIR / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
 
         DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L1filter.parquet",
+
+        DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L2filter.parquet",
+
+        DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L3filter.parquet",
         ]
     actdict = {
     'actions': [
-    "ipython ./src/filter_option_data_01.py"
+    "ipython ./src/filter_option_data_B.py"
     ], 
    # "targets": targets,
     "file_dep": file_dep,
@@ -153,6 +167,9 @@ def task_filter_appendix_B_Level01():
     "verbosity": 2,
     }
     return actdict
+
+
+
 
 def task_create_TableB1(): 
 
