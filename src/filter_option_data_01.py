@@ -110,7 +110,7 @@ def delete_zero_bid_filter(df):
 	return df 
 
 def delete_zero_volume_filter(df): 
-	df = df[df['volume'] != 0.0]
+	#df = df[df['volume'] != 0.0]
 	#df = df[df['open_interest'] != 0.0]
 	return df 
 
