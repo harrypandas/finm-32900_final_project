@@ -87,6 +87,7 @@ if __name__ == "__main__":
 	df_Missing = df[~boolsFound].reset_index(drop =True)
 
 
+
 	#Now we check if the option will ever return: 
 	df_Missing = df_Missing.drop(columns = ["-1_dateC"])
 	df_Missing = with_lagged_columns( df_Missing, columns_to_lag = ['dateC'], id_columns = option_id, 
@@ -103,10 +104,11 @@ if __name__ == "__main__":
 
 
 
-
+	#PANDA.TSERIES.OFFSETS FOR BUSINESS DAYS; BDAY
 	dg = df_Missing
-	dfsort  = dg.groupby(option_id).apply(lambda group: group.sort_values('date'))
-	h = dfsort[['exdate', 'date', 'dateC', '-1_dateC', 'found']].head(20)
+	dfsort  = df.groupby(option_id).apply(lambda group: group.sort_values('date'))
+	# h = dfsort[['exdate', 'date', 'nextTradingDay', '-1_dateC', 'found',  'time_to_maturity']].head(20)
 
 
 
+	dg = df.apply(lambda x: len(pd.bdate_range(start=x['date'], end=x['exdate']))) 
