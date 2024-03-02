@@ -53,7 +53,7 @@ def filter_moneyness(df):
     # check if moneyness (mnyns) is already in the dataframe
     if 'mnyns' not in df.columns:
         # if not, calculate moneyness
-        df = f1.getSecPrice(df)
+        df = f1.calc_moneyness(df)
     # remove options with moneyness less than 0.8 or greater than 1.2
     df = df.loc[(df['mnyns']>=0.8) & (df['mnyns']<=1.2)].reset_index(drop=True)
     return df
