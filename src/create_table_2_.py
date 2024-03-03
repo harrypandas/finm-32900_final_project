@@ -115,9 +115,10 @@ def create2(T1_all, T2_all, T1_month, T2_month):
 	t1 =  T1_month
 	t2 = T2_month
 
-	t1['Interpolated'] = t2['Missing'] + t2['Expired']
-	t2['Interpolated'] = t2['Missing'] + t2['Expired']
+	t1['Interpolated'] = t1['Missing'] + t1['Expired']
 
+	t2['Interpolated'] = t2['Missing'] + t2['Expired']
+	
 	for k in ['Found', 'Interpolated']:
 	#k = 'Found'
 
@@ -164,13 +165,11 @@ if __name__ == "__main__":
 	table2_01_all = pd.read_parquet(OUTPUT_DIR.joinpath(f"table2_all_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet"))
 	table2_01_month = pd.read_parquet(OUTPUT_DIR.joinpath(f"table2_month_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet"))
 
-	# tableB1_02 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet")
-	# tableB1_02 = tableB1_02.replace({float('nan'): ''})
-	table2_02_all = table2_01_all
-	table2_02_month = table2_01_month 
+	table2_02_all = pd.read_parquet(OUTPUT_DIR.joinpath(f"table2_all_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet"))
+	table2_02_month = pd.read_parquet(OUTPUT_DIR.joinpath(f"table2_month_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet"))
+
 
 
 	create2(table2_01_all,table2_02_all, table2_01_month,  table2_02_month)
 
 
-	#createB1(tableB1_01, tableB1_02)

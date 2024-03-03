@@ -231,7 +231,7 @@ if __name__ == "__main__":
 	df1, dT1, dTM1 = table2_analysis(START_DATE_01, END_DATE_01)
 
 
-	#df2, dT2, dTM2 = table2_analysis(START_DATE_02, END_DATE_02)
+	df2, dT2, dTM2 = table2_analysis(START_DATE_02, END_DATE_02)
 
 
 
