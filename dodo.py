@@ -137,6 +137,7 @@ def task_filter_appendix_B():
     "./src/filter_option_data_01.py", 
     "./src/filter_option_data_02.py", 
     "./src/filter_option_data_03.py", 
+    "./src/filter_option_data_B.py",
     DATA_DIR / f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet", 
     DATA_DIR / f"pulled/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
     ]
@@ -196,102 +197,87 @@ def task_create_TableB1():
 
     return actdict
 
-# def task_compile_latex_docs():
-#     """Example plots"""
-#     file_dep = [
-#         # "./reports/report_example.tex",
-#         # "./reports/slides_example.tex",
-#        # "./reports/slides_example.tex",
-#         "./output/pandas_to_latex_simple_table1.tex",
-#     ]
-#     file_output = [
-#         "./reports/final_report.pdf",
-#        # "./reports/slides_example.pdf",
-#     ]
-#     targets = [file for file in file_output]
-
-#     return {
-#         "actions": [
-
-#             "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
-#             "latexmk -xelatex -c -cd ./reports/final_report.tex",  # Clean
-#             # "latexmk -xelatex -cd ./reports/report_example.tex",  # Compile
-#             # "latexmk -xelatex -c -cd ./reports/report_example.tex",  # Clean
-#             # "latexmk -xelatex -cd ./reports/slides_example.tex",  # Compile
-#             # "latexmk -xelatex -c -cd ./reports/slides_example.tex",  # Clean
-#             # # "latexmk -CA -cd ../reports/",
-#         ],
-#         "targets": targets,
-#         "file_dep": file_dep,
-#         "clean": True,
-#     }
 
 
 
-
-# def task_pull_CRSP_Compustat():
-#     """Pull CRSP/Compustat data from WRDS and save to disk
-#     """
-#     file_dep = [
-#         "./src/config.py", 
-#         "./src/load_CRSP_stock.py",
-#         "./src/load_CRSP_Compustat.py",
-#         ]
-#     targets = [
-#         Path(DATA_DIR) / "pulled" / file for file in 
-#         [
-#             ## src/load_CRSP_stock.py
-#             "CRSP_MSF_INDEX_INPUTS.parquet", 
-#             "CRSP_MSIX.parquet", 
-#             ## src/load_CRSP_Compustat.py
-#             "Compustat.parquet",
-#             "CRSP_stock_ciz.parquet",
-#             "CRSP_Comp_Link_Table.parquet",
-#             "FF_FACTORS.parquet",
-#         ]
-#     ]
-
-#     return {
-#         "actions": [
-#             "ipython src/config.py",
-#             "ipython src/load_CRSP_stock.py",
-#             "ipython src/load_CRSP_Compustat.py",
-#         ],
-#         "targets": targets,
-#         "file_dep": file_dep,
-#         "clean": True,
-#         "verbosity": 2, # Print everything immediately. This is important in
-#         # case WRDS asks for credentials.
-#     }
+def task_Table2_Analysis(): 
+    file_dep = [
+    "./src/filter_option_data_04.py", 
+    DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
+    DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
+    ]
+    targets = [
+        OUTPUT_DIR /f"table2_all_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet",
+        OUTPUT_DIR /f"table2_month_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet", 
+        OUTPUT_DIR /f"table2_all_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
+        OUTPUT_DIR /f"table2_month_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet", 
+        ]
+    actdict = {
+    'actions': [
+    "ipython ./src/filter_option_data_04.py"
+    ], 
+   # "targets": targets,
+    "file_dep": file_dep,
+    'clean': True,
+    "verbosity": 2,
+    }
+    return actdict
 
 
-# def task_calc_Fama_French_1993_factors():
-#     """Calculate Factors for Fama-French 1993 model
-#     """
-#     file_dep = [
-#         "./src/calc_Fama_French_1993_factors.py",
-#         "./src/misc_tools.py",
-#         ]
-#     targets = [
-#         *[Path(DATA_DIR) / "pulled" / file for file in 
-#         [
-#             ## src/calc_Fama_French_1993_factors.py
-#             "FF_1993_vwret.parquet",
-#             "FF_1993_vwret_n.parquet",
-#             "FF_1993_factors.parquet",
-#             "FF_1993_nfirms.parquet",
-#         ]],
-#         OUTPUT_DIR / "FF_1993_Comparison.png",
-#     ]
+def task_create_Table2(): 
+    file_dep = [
+    "./src/create_table_2_.py", 
+        OUTPUT_DIR /f"table2_all_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet",
+        OUTPUT_DIR /f"table2_month_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet", 
+        OUTPUT_DIR /f"table2_all_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
+        OUTPUT_DIR /f"table2_month_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet", 
+    ]
+    file_output = [
+        "table2.tex",
+        ]
+    targets = [OUTPUT_DIR / file for file in file_output]
 
-#     return {
-#         "actions": [
-#             "ipython src/calc_Fama_French_1993_factors.py",
-#         ],
-#         "targets": targets,
-#         "file_dep": file_dep,
-#         "clean": True,
-#     }
+    actdict = {
+    'actions': [
+    "ipython ./src/create_table_2_.py"
+    ], 
+   # "targets": targets,
+    "file_dep": file_dep,
+    'clean': True,
+    "verbosity": 2,
+    }
+    return actdict
+
+
+
+def task_compile_latex_docs():
+    """Example plots"""
+    file_dep = [
+    	"./src/create_table_B1_.py",
+    	"./src/create_table_2_.py", 
+    	"./output/tableB1.tex",
+        "./output/table2.tex",
+    ]
+    file_output = [
+        "./reports/final_report.pdf",
+       # "./reports/slides_example.pdf",
+    ]
+    targets = [file for file in file_output]
+
+    return {
+        "actions": [
+
+            "latexmk -xelatex -cd ./reports/sample_table.tex",  # Compile
+            "latexmk -xelatex -c -cd ./reports/sample_table.tex",  # Clean
+            # "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
+            # "latexmk -xelatex -c -cd ./reports/final_report.tex",   # Clean
+        ],
+        "targets": targets,
+        "file_dep": file_dep,
+        "clean": True,
+    }
+
+
 
 
 # def task_convert_notebooks_to_scripts():

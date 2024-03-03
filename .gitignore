@@ -13,7 +13,7 @@
 # include pdfs as images. Maybe there is a good way to get
 # around this.
 
-Exclude data folder
+#Exclude data folder
 /data/*
 !/data/manual/
 temp*.csv
@@ -26,6 +26,7 @@ temp*.csv
 # to generate them when you need them.
 *.graphml
 ~*
+
 
 
 ##############
@@ -250,4 +251,8 @@ drafts/draft_bp.pdf
 
 *.vrb
 # notebooks/level_03_filter.ipynb
+
+.doit.db.db
+
 rubric.docx
+
