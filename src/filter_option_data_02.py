@@ -89,8 +89,8 @@ def filter_implied_interest_rate(optm_l2_mny):
         return result
 
     def calc_implied_interest_rate(matched_options):
-        # underlying price
-        # if test_price_strike_match(matched_options):
+        """Implied Interest Rate <0: Calculate the implied interest rate for the options
+        """
         print(">> Prices and strikes of puts and calls match correctly.")
         S = matched_options['sec_price']
         K = matched_options['strike_price']

@@ -12,9 +12,6 @@ DATA_DIR = Path(config.DATA_DIR)
 TEST_START = "1996-01-04"
 TEST_END = "2012-01-31"
 
-""" Unit tests for the following:
-
-"""
 def test_calc_mnyns():
     """Consider the scenario below to test the calc_moneyness function 
        accurately calculates moneyness using the strike price and
