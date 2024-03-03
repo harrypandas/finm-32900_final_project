@@ -250,35 +250,32 @@ def task_create_Table2():
 
 
 
-# def task_compile_latex_docs():
-#     """Example plots"""
-#     file_dep = [
-#         # "./reports/report_example.tex",
-#         # "./reports/slides_example.tex",
-#        # "./reports/slides_example.tex",
-#         "./output/pandas_to_latex_simple_table1.tex",
-#     ]
-#     file_output = [
-#         "./reports/final_report.pdf",
-#        # "./reports/slides_example.pdf",
-#     ]
-#     targets = [file for file in file_output]
+def task_compile_latex_docs():
+    """Example plots"""
+    file_dep = [
+    	"./src/create_table_B1_.py",
+    	"./src/create_table_2_.py", 
+    	"./output/tableB1.tex",
+        "./output/table2.tex",
+    ]
+    file_output = [
+        "./reports/final_report.pdf",
+       # "./reports/slides_example.pdf",
+    ]
+    targets = [file for file in file_output]
 
-#     return {
-#         "actions": [
+    return {
+        "actions": [
 
-#             "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
-#             "latexmk -xelatex -c -cd ./reports/final_report.tex",  # Clean
-#             # "latexmk -xelatex -cd ./reports/report_example.tex",  # Compile
-#             # "latexmk -xelatex -c -cd ./reports/report_example.tex",  # Clean
-#             # "latexmk -xelatex -cd ./reports/slides_example.tex",  # Compile
-#             # "latexmk -xelatex -c -cd ./reports/slides_example.tex",  # Clean
-#             # # "latexmk -CA -cd ../reports/",
-#         ],
-#         "targets": targets,
-#         "file_dep": file_dep,
-#         "clean": True,
-#     }
+            "latexmk -xelatex -cd ./reports/sample_table.tex",  # Compile
+            "latexmk -xelatex -c -cd ./reports/sample_table.tex",  # Clean
+            # "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
+            # "latexmk -xelatex -c -cd ./reports/final_report.tex",   # Clean
+        ],
+        "targets": targets,
+        "file_dep": file_dep,
+        "clean": True,
+    }
 
 
 

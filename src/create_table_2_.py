@@ -46,7 +46,7 @@ def create2(T1_all, T2_all, T1_month, T2_month):
 			\multicolumn{1}{c}{} &
 		          \multicolumn{3}{c}{""" +f"{START_DATE_01[:7]} to {END_DATE_01[:7]}" + r"""} & 
 		          \multicolumn{1}{c}{} &
-			\multicolumn{3}{c}{""" +f"{START_DATE_02[:7]} to {END_DATE_02[:7]}" + r"""} & 
+			\multicolumn{3}{c}{""" +f"{START_DATE_02[:7]} to {END_DATE_02[:7]}" + r"""} \\
 		        
 
 		       \hline
@@ -99,7 +99,7 @@ def create2(T1_all, T2_all, T1_month, T2_month):
 		""" + f'{k}' + r""" &   & 
 		""" + f"{C1}" + r""" &  & """ + f'{C1p}' + r"""\% & 
 		 & 
-		 """ + f'{C2}' + r""" & """ + f'{C2p}' + r"""\% & 
+		 """ + f'{C2}' + r""" &  &""" + f'{C2p}' + r"""\% & 
 		 & 
 		 """ + f'{P1}' + r""" &  & """ + f'{P1p}' + r"""\% & 
 		 & 
