@@ -17,6 +17,8 @@ START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
 
 def getLengths(df): 
+	""" Helper function to get the lengths of the dataframe and the number of calls and puts
+	"""
 	test1 = df['cp_flag'].value_counts().to_dict()
 	test1C = test1['C']
 	test1P = test1['P'] 
@@ -25,26 +27,32 @@ def getLengths(df):
 
 
 def getSecPrice(df): 
+	""" Helper function to get the security price from the dataframe
+	"""
 	df['sec_price'] =  df['close']
 	return df
 
 def calc_moneyness(df):
+	""" Helper function to calculate the moneyness of the options
+	"""
 	df['mnyns'] = df['strike_price']/df['sec_price']
 	return df
 
 def delete_identical_filter(df):
-	#remove identical options (type, strike, experiation date, price)
-	#price is defined on the buy side - so use best_offer: 2/19/24 discussion with Viren
+	""" Helper function to delete identical options from the dataframe
+		Remove identical options (type, strike, experiation date, price)
+	"""
 	columns_to_check = ['secid', 'cp_flag', 'strike_price','date', 'exdate', 'best_offer']
 	df = df.drop_duplicates(subset=columns_to_check, keep='first')
 	return df	
 
 def delete_identical_but_price_filter(df): 
-
+	""" Helper function to delete identical options from the dataframe
+		Remove identical options (type, strike, expiration date) but different prices
+	"""
 	#some are identical (type, strike, maturity, date) but different prices. 
 	#KEEP closest to TBill based implied volatility of moneyness neighbors 
 	#delete others 
-
 
 	#Get Bools of duplicated row: 
 	bool_Dup = df.duplicated(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'], keep = False)
@@ -76,18 +84,12 @@ def delete_identical_but_price_filter(df):
 	#Take subset of the In the Money dataframe to merge 
 	dMonSub = dMon[huntlist + ['mon_vola']]
 	
-
-
-
 	##Join the ITM volatility with the correct option: 
 	df_Join = pd.merge(df_Dup, dMonSub, on = huntlist, how = 'inner')
-
-
 
 	#quick fix #2: 
 	df_Join['impl_volatility2'] = df_Join['impl_volatility']
 	df_Join['impl_volatility2'].fillna(0, inplace=True)
-
 
 	#findimplied volatility being closest to ITM: 
 	idx_keep = df_Join.groupby(by = huntlist).apply(lambda x: ((x['impl_volatility2']-x['mon_vola']).abs()).idxmin())
@@ -102,20 +104,25 @@ def delete_identical_but_price_filter(df):
 	df = pd.concat([df_noDup, df_reduced], ignore_index = True)
 	df = df.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
 
-
 	return df 
 
 def delete_zero_bid_filter(df): 
+	""" Helper function to delete options with zero bid from the dataframe
+	"""
 	df = df[df['best_bid'] != 0.0]
 	return df 
 
 def delete_zero_volume_filter(df): 
+	""" Helper function to delete options with zero volume from the dataframe
+		We do not implement this filter in the current version of the code
+	"""
 	#df = df[df['volume'] != 0.0]
 	#df = df[df['open_interest'] != 0.0]
 	return df 
 
 def appendixBfilter_level1(df): 
-	# df = fixStrike(df)
+	""" Function to apply the filters from Appendix B of the paper
+	"""
 	df = getSecPrice(df)
 	df = calc_moneyness(df)
 
@@ -164,7 +171,8 @@ def appendixBfilter_level1(df):
 
 
 def execute_appendixBfilter_level1(start=START_DATE_01, end=END_DATE_01): 
-
+	""" Function to execute the filters from Appendix B of the paper
+	"""
 	df = load_option_data_01.load_all_optm_data(data_dir=DATA_DIR,
 											wrds_username=WRDS_USERNAME, 
 											startDate=start,
