@@ -140,16 +140,4 @@ def apply_l2_filters(df):
     df = filter_unable_compute_iv(df)
     return df
 
-if __name__ == "__main__": 
-    """Save the filtered data to a parquet file.
-       Must first load all options data, apply level 1 filters, and then apply level 2 filters.
-    """
-    # df = l1.load_all_optm_data()
-    # df_f1, df_sum, df_tableB1 = f1.appendixBfilter_level1(df)
-    # df_f2 = apply_l2_filters(df_f1)
-
-    # startYearMonth = df_f2['date'].min().year*100 + df_f2['date'].min().month
-    # endYearMonth = df_f2['date'].max().year*100 + df_f2['date'].max().month
-
-    # save_path = DATA_DIR.joinpath( f"pulled/data_{startYearMonth}_{endYearMonth}_L2filter.parquet")
-    # df_f2.to_parquet(save_path)
+# if __name__ == "__main__": 
