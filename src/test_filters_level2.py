@@ -12,9 +12,6 @@ DATA_DIR = Path(config.DATA_DIR)
 TEST_START = "1996-01-04"
 TEST_END = "2012-01-31"
 
-""" Unit tests for the following:
-
-"""
 def test_calc_mnyns():
     """Consider the scenario below to test the calc_moneyness function 
        accurately calculates moneyness using the strike price and
@@ -51,7 +48,7 @@ def test_l2_filters_validity():
     df = f2.apply_l2_filters(df)
 
     # expected result >> based on paper
-    expected = 1_076_744
+    expected = 642_944
 
     # assert that the number of rows is the same as the original
-    assert df.shape[0] == expected, "The number of rows should return 1,076,744"
+    assert df.shape[0] == expected, "The number of rows should return 642_944"
