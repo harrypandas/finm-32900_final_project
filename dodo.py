@@ -248,7 +248,25 @@ def task_create_Table2():
     }
     return actdict
 
+def task_create_latexVar(): 
+    file_dep = [
+    "./src/create_latex_variables.py", 
+    ]
+    file_output = [
+        "latexVar.tex",
+        ]
+    targets = [OUTPUT_DIR / file for file in file_output]
 
+    actdict = {
+    'actions': [
+    "ipython ./src/create_latex_variables.py"
+    ], 
+    "targets": targets,
+    "file_dep": file_dep,
+    'clean': True,
+    "verbosity": 2,
+    }
+    return actdict
 
 def task_compile_latex_docs():
     file_dep = [

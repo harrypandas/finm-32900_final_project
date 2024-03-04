@@ -213,107 +213,130 @@ def execute_appendixBfilter_level1(start=START_DATE_01, end=END_DATE_01):
 
 	
 if __name__ == "__main__": 
-	# t0 = time.time()
-	# df01, tB01 = execute_appendixBfilter_level1(start=START_DATE_01, end=END_DATE_01)
-	# t1 = time.time()-t0
-	# print(f"Took {t1} to complete Level B1 Analysis on {START_DATE_01} -> {END_DATE_01} \n")
+	t0 = time.time()
+	df01, tB01 = execute_appendixBfilter_level1(start=START_DATE_01, end=END_DATE_01)
+	t1 = time.time()-t0
+	print(f"Took {t1} to complete Level B1 Analysis on {START_DATE_01} -> {END_DATE_01} \n")
 
 
-	# t0 = time.time()
-	# df02, tB02 = execute_appendixBfilter_level1(start=START_DATE_02, end=END_DATE_02)
-	# t1 = time.time()-t0
-	# print(f"Took {t1} to complete Level B1 Analysis on {START_DATE_02} -> {END_DATE_02} \n")
+	t0 = time.time()
+	df02, tB02 = execute_appendixBfilter_level1(start=START_DATE_02, end=END_DATE_02)
+	t1 = time.time()-t0
+	print(f"Took {t1} to complete Level B1 Analysis on {START_DATE_02} -> {END_DATE_02} \n")
 
-	start=START_DATE_01
-	end=END_DATE_01
+	# start=START_DATE_02
+	# end=END_DATE_02
 
-	df = load_option_data_01.load_all_optm_data(data_dir=DATA_DIR,
-											wrds_username=WRDS_USERNAME, 
-											startDate=start,
-											endDate=end)
-
-
-
-
-	df = getSecPrice(df)
-	df = calc_moneyness(df)
-
-
-	df = delete_identical_filter(df)
-
-	df2 = df
-
-	""" Helper function to delete identical options from the dataframe
-		Remove identical options (type, strike, expiration date) but different prices
-	"""
-	#some are identical (type, strike, maturity, date) but different prices. 
-	#KEEP closest to TBill based implied volatility of moneyness neighbors 
-	#delete others 
-
-	#Get Bools of duplicated row: 
-	bool_Dup = df.duplicated(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'], keep = False)
-
-	#remove duplicated 
-	df_noDup = df[~bool_Dup]
-
-	#grab duplicates 
-	df_Dup = df[bool_Dup]
-	df_Dup = df_Dup.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
-
-	##find moneyness neighbors
-	huntlist = ['secid', 'cp_flag', 'date', 'exdate']
-	mask = df.set_index(huntlist).index.isin(df_Dup.set_index(huntlist).index)
-
-	#all of the moneyness neighbors: 
-	df_Neigh = df[mask]
-	df_Neigh = df_Neigh.reset_index(drop =True)
-
-	#in the money neighbors: 
-	m1 = df_Neigh.groupby(by = huntlist).apply(lambda x: ((x['mnyns']-1)**2).idxmin())
-	dMon = df_Neigh.loc[m1]
-
-	###NEED IMPLIED VOLATILITIES TO BE CALCULATED 
-	dMon['mon_vola'] = dMon['impl_volatility']
-	#quick fix #1: 
-	dMon['mon_vola'] = dMon['mon_vola'].fillna(0)
-	#dMon[dMon['mon_vola'].isna()]
-	#Take subset of the In the Money dataframe to merge 
-
-	# #Computing implied volatility 
-	# dMon['mon_vola'] = dMon.apply(lambda x: bsm.calc_implied_volatility(
-	# 	market_price = x['best_bid'], S = x['close'], K = x['strike_price'], 
-	# 	T = (x['exdate'] - x['date'])/datetime.timedelta(days=365), r = x['tb_m3'], option_type = x['cp_flag'], method = 'newton_raphson'), axis=1)
+	# df = load_option_data_01.load_all_optm_data(data_dir=DATA_DIR,
+	# 										wrds_username=WRDS_USERNAME, 
+	# 										startDate=start,
+	# 										endDate=end)
 
 
 
-	dMonSub = dMon[huntlist + ['mon_vola']]
+
+	# df = getSecPrice(df)
+	# df = calc_moneyness(df)
+
+
+	# df = delete_identical_filter(df)
+
+	# df2 = df
+
+	# """ Helper function to delete identical options from the dataframe
+	# 	Remove identical options (type, strike, expiration date) but different prices
+	# """
+	# #some are identical (type, strike, maturity, date) but different prices. 
+	# #KEEP closest to TBill based implied volatility of moneyness neighbors 
+	# #delete others 
+
+	# #Get Bools of duplicated row: 
+	# bool_Dup = df.duplicated(subset = ['secid', 'date', 'cp_flag', 'strike_price', 'exdate'], keep = False)
+
+	# #remove duplicated 
+	# df_noDup = df[~bool_Dup]
+
+	# #grab duplicates 
+	# df_Dup = df[bool_Dup]
+	# df_Dup = df_Dup.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
+
+	# ##find moneyness neighbors
+	# huntlist = ['secid', 'cp_flag', 'date', 'exdate']
+	# mask = df.set_index(huntlist).index.isin(df_Dup.set_index(huntlist).index)
+
+	# #all of the moneyness neighbors: 
+	# df_Neigh = df[mask]
+	# df_Neigh = df_Neigh.reset_index(drop =True)
+
+	# #in the money neighbors: 
+	# m1 = df_Neigh.groupby(by = huntlist).apply(lambda x: ((x['mnyns']-1)**2).idxmin())
+	# dMon = df_Neigh.loc[m1]
+
+	# ###NEED IMPLIED VOLATILITIES TO BE CALCULATED 
+	# dMon['mon_vola'] = dMon['impl_volatility']
+	# #quick fix #1: 
+	# dMon['mon_vola'] = dMon['mon_vola'].fillna(0)
+	# #dMon[dMon['mon_vola'].isna()]
+	# #Take subset of the In the Money dataframe to merge 
+
+	# # #Computing implied volatility 
+	# # dMon['mon_vola'] = dMon.apply(lambda x: bsm.calc_implied_volatility(
+	# # 	market_price = x['best_bid'], S = x['close'], K = x['strike_price'], 
+	# # 	T = (x['exdate'] - x['date'])/datetime.timedelta(days=365), r = x['tb_m3'], option_type = x['cp_flag'], method = 'newton_raphson'), axis=1)
+
+
+
+	# dMonSub = dMon[huntlist + ['mon_vola']]
 	
-	##Join the ITM volatility with the correct option: 
-	df_Join = pd.merge(df_Dup, dMonSub, on = huntlist, how = 'inner')
-
-	#quick fix #2: 
-	df_Join['impl_volatility2'] = df_Join['impl_volatility']
-	df_Join['impl_volatility2'].fillna(0, inplace=True)
+	# ##Join the ITM volatility with the correct option: 
+	# df_Join = pd.merge(df_Dup, dMonSub, on = huntlist, how = 'inner')
 
 
-	##Tried finding implied volatility: 
+############
+	##quick fix #2: 
+	# df_Join['impl_volatility2'] = df_Join['impl_volatility']
+	# df_Join['impl_volatility2'].fillna(0.2, inplace=True)
+
+
+	# #Tried finding implied volatility: 
 	# df_Join['guess'] = df_Join['impl_volatility']
-	# df_Join['guess'].fillna(0.1, inplace=True)
+	# df_Join['guess'].fillna(0.15, inplace=True)
 	# df_Join['impl_volatility2'] =	df_Join.apply(lambda x: bsm.calc_implied_volatility(
 	# 	market_price = x['best_bid'], S = x['close'], K = x['strike_price'], 
 	# 	T = (x['exdate'] - x['date'])/datetime.timedelta(days=365), r = x['tb_m3'], option_type = x['cp_flag'], method = 'binary_search', initial_guess = x['guess']), axis=1)
 	# df_Join[['impl_volatility', 'impl_volatility2']]
 
-	#findimplied volatility being closest to ITM: 
-	idx_keep = df_Join.groupby(by = huntlist).apply(lambda x: ((x['impl_volatility2']-x['mon_vola']).abs()).idxmin())
-	#df_Join[df_Join['mon_vola'].isna()]
+	# #findimplied volatility being closest to ITM: 
+	# idx_keep = df_Join.groupby(by = huntlist).apply(lambda x: ((x['impl_volatility2']-x['mon_vola']).abs()).idxmin())
+	# #df_Join[df_Join['mon_vola'].isna()]
 
-	#Tidy up the reduced subset of duplicates
-	df_reduced= df_Join.loc[idx_keep]
-	df_reduced = df_reduced.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop=True)
-	df_reduced.drop(['impl_volatility2', 'mon_vola'], axis = 1, inplace = True)
+	# #Tidy up the reduced subset of duplicates
+	# df_reduced= df_Join.loc[idx_keep]
+	# df_reduced = df_reduced.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop=True)
+	# df_reduced.drop(['impl_volatility2', 'mon_vola'], axis = 1, inplace = True)
 
-	#Combine the OG dataframe with No Duplicates with the reduced subset of duplicates
-	df = pd.concat([df_noDup, df_reduced], ignore_index = True)
-	df = df.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
+	# #Combine the OG dataframe with No Duplicates with the reduced subset of duplicates
+	# df = pd.concat([df_noDup, df_reduced], ignore_index = True)
+	# df = df.sort_values(by=[ 'cp_flag', 'date']).reset_index(drop = True)
+	# missing_iv = df_Join
+	# missing_iv = missing_iv[['date', 'exdate', 'strike_price', 'sec_price', 'best_bid', 'best_offer', 'tb_m3','impl_volatility','cp_flag', 'mnyns']]
 
+	# for index, row in missing_iv.iterrows():
+	#     date = row['date']
+	#     exdate = row['exdate']
+	#     T = (exdate-date)/datetime.timedelta(days=365)
+	#     K = row['strike_price']
+	#     S = row['sec_price']
+	#     r = row['tb_m3']
+	#     option_type = row['cp_flag']
+	#     mnyns = row['mnyns']
+	#     market_price = row['best_bid']
+	    
+	    
+	#     res = bsm.calc_implied_volatility(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, method='newton_raphson')
+	#     print(f'{option_type} price={market_price:,.3f}, S={S:,.3f}, K={K:,.3f}, ITM={S>K if option_type=='C' else K>S}, date={date:%Y-%m-%d}, exdate={exdate:%Y-%m-%d}, T={(exdate-date).days:,.0f} days, r={r:,.3f}, mnyns={mnyns:,.3f} --> {res}')
+
+
+	# ek = df_Join[df_Join['impl_volatility'].isna()]['date']-df_Join[df_Join['impl_volatility'].isna()]['exdate']
+	# dfBad = df_Join[df_Join['impl_volatility'].isna()]
+	# ek.mean() 
