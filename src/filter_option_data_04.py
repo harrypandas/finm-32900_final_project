@@ -195,11 +195,11 @@ def table2_analysis(start, end):
 
 	# start = START_DATE_01
 	# end = END_DATE_01
-	#Insert dataframe: 
+	# #Insert dataframe: 
 	save_path3 = DATA_DIR.joinpath( f"intermediate/data_{start[:7]}_{end[:7]}_L3filter.parquet")
 	df= pd.read_parquet(save_path3)
 	
-
+	df = df.reset_index()
 	df = pushWeekendExpiration(df)
 	df = pushRestExpir(df)
 	#Convert date to integer. Going to use relative distance (in trading days) from start date
@@ -221,10 +221,14 @@ def table2_analysis(start, end):
 
 if __name__ == "__main__": 
 
+	# start = START_DATE_01
+	# end = END_DATE_01
+	# #Insert dataframe: 
+	# save_path3 = DATA_DIR.joinpath( f"intermediate/data_{start[:7]}_{end[:7]}_L3filter.parquet")
+	# df= pd.read_parquet(save_path3)
 
 
-
-
+#
 
 
 
