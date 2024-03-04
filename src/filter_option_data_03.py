@@ -210,7 +210,13 @@ def test_price_strike_match(matching_calls_puts):
     Returns:
     bool: True if the strike prices and security prices of matching calls and puts are equal, False otherwise.
     """
-    return (np.allclose(matching_calls_puts['strike_price_C'], matching_calls_puts['strike_price_P'])) and (np.allclose(matching_calls_puts['sec_price_C'], matching_calls_puts['sec_price_P']))# and (np.allclose(matching_calls_puts['tb_m3_C'], matching_calls_puts['tb_m3_P']))
+    try:
+        return (np.allclose(matching_calls_puts['strike_price_C'], matching_calls_puts['strike_price_P'])) and (np.allclose(matching_calls_puts['sec_price_C'], matching_calls_puts['sec_price_P']))# and (np.allclose(matching_calls_puts['tb_m3_C'], matching_calls_puts['tb_m3_P']))
+    except KeyError:
+        if 'strike_price' in matching_calls_puts.index.names and 'sec_price' in matching_calls_puts.index.names:
+            return True
+        else:
+            return False
 
 
 def calc_implied_interest_rate(matched_options):
