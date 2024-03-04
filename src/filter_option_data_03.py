@@ -1,3 +1,19 @@
+"""
+This file contains a collection of functions for filtering and processing option data according to the Level 3 Filters described in originalpaper.
+
+Functions:
+- functimer: A decorator function that measures the execution time of a given function.
+- fit_and_store_curve: Fit a quadratic curve to a group of data points and store the fitted values.
+- apply_quadratic_iv_fit: Apply quadratic curve fitting to the input data.
+- calc_relative_distance: Calculate the relative distance between two series of data.
+- mark_outliers: Determine if a data point is an outlier based on its moneyness_bin and relative distance from the fitted curve.
+- build_put_call_pairs: Build pairs of call and put options based on the same date, expiration date, and moneyness.
+- test_price_strike_match: Check if the strike prices and security prices of matching calls and puts are equal.
+- calc_implied_interest_rate: Calculate the implied interest rate based on the given matched options data.
+- pcp_filter_outliers: Filter out outliers based on the relative distance of interest rates and the outlier threshold.
+- iv_filter_outliers: Filter out outliers based on the relative distance of implied volatility and the outlier threshold.
+"""
+
 # standard libraries
 import warnings
 warnings.filterwarnings("ignore")
@@ -128,6 +144,7 @@ def calc_relative_distance(series1, series2, method='percent'):
     result = np.where(np.isinf(result), np.nan, result)
     
     return result
+
 
 @functimer  
 def mark_outliers(row, std_devs, outlier_threshold):

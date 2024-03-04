@@ -1,6 +1,5 @@
 """
-This module contains functions for pricing European call and put options using the Black-Scholes-Merton model,
-as well as calculating implied volatility.
+This module contains functions for pricing European call and put options using the Black-Scholes-Merton model, as well as calculating implied volatility.
 
 Functions:
 - european_call_price: Calculates the price of a European call option.
@@ -8,8 +7,12 @@ Functions:
 - norm_cdf: Calculates the cumulative distribution function (CDF) of the standard normal distribution.
 - norm_pdf: Calculates the probability density function (PDF) of the standard normal distribution.
 - calc_vega: Calculates the option vega using the Black-Scholes-Merton model.
-- iv_objective: Calculates the difference between the market price and the theoretical price of an option.
-- calc_implied_volatility: Calculates the implied volatility of an option using the bisection method.
+- iv_objective: Objective function to calculate implied volatility for quasi-Newton methods.
+- calc_implied_volatility: Calculates the implied volatility of an option using various methods.
+- iv_quasi_newton_vectorized: Calculates the implied volatility for each set of option parameters using a quasi-Newton optimization method.
+- iv_quasi_newton: Calculates the implied volatility using a quasi-Newton optimization method (not vectorized, so will run slower).
+- iv_newton_raphson: Calculates the implied volatility using the Newton-Raphson method.
+- iv_binary_search: Calculates the implied volatility using binary search.
 """
 
 import math
@@ -109,11 +112,13 @@ def iv_objective(sigma, market_price, S, K, T, r, option_type):
         theoretical_price = european_put_price(S=S, K=K, T=T, r=r, sigma=sigma)
         
     # print(option_type, 'price:',theoretical_price, sigma, market_price, (theoretical_price - market_price)**2)
-    return (theoretical_price - market_price)**2
+    #return (theoretical_price - market_price)**2
+    return (theoretical_price - market_price)
 
 
 
-def calc_implied_volatility(market_price, S, K, T, r, option_type, method='quasi_newton', tol=1e-12, initial_guess=0.05, bounds=(0.00001, 5.0)):
+def calc_implied_volatility(market_price, S, K, T, r, option_type, method='quasi_newton',
+                            tol=1e-12, initial_guess=0.05, bounds=(0.00001, 5.0)):
     """
     Calculates the implied volatility of an option using various methods. Options for method are 'quasi_newton', 'newton_raphson', 'binary_search', and 'all'. If method=='all', the function returns a dictionary containing the implied volatilities calculated using different methods.
 
@@ -164,13 +169,7 @@ def iv_quasi_newton_vectorized(market_price, S, K, T, r, option_type, tol=1e-15,
     iv_results = np.zeros(market_price.shape)
     
     # Iterate over each element in the input arrays
-    for i in range(len(market_price)):
-        # Function to minimize (objective function)
-        def iv_objective(sigma, market_price, S, K, T, r, option_type):
-            # Placeholder for the actual objective function calculation
-            # This should return the difference between theoretical and market prices
-            pass
-        
+    for i in range(len(market_price)):        
         result = minimize(iv_objective, [initial_guess], args=(market_price[i], S[i], K[i], T[i], r[i], option_type[i]),
                           bounds=[bounds], method='L-BFGS-B', options={'eps': tol, 'gtol': tol})
         
