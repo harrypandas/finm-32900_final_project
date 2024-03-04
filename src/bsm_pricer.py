@@ -112,12 +112,11 @@ def iv_objective(sigma, market_price, S, K, T, r, option_type):
         theoretical_price = european_put_price(S=S, K=K, T=T, r=r, sigma=sigma)
         
     # print(option_type, 'price:',theoretical_price, sigma, market_price, (theoretical_price - market_price)**2)
-    #return (theoretical_price - market_price)**2
-    return (theoretical_price - market_price)
+    return (theoretical_price - market_price)**2
 
 
 
-def calc_implied_volatility(market_price, S, K, T, r, option_type, method='quasi_newton',
+def calc_implied_volatility(market_price, S, K, T, r, option_type, method='newton_raphson',
                             tol=1e-12, initial_guess=0.05, bounds=(0.00001, 5.0)):
     """
     Calculates the implied volatility of an option using various methods. Options for method are 'quasi_newton', 'newton_raphson', 'binary_search', and 'all'. If method=='all', the function returns a dictionary containing the implied volatilities calculated using different methods.
@@ -129,7 +128,7 @@ def calc_implied_volatility(market_price, S, K, T, r, option_type, method='quasi
     - T (float): The time to expiration of the option.
     - r (float): The risk-free interest rate.
     - option_type (str): The type of the option ('call' or 'put').
-    - method (str, optional): The method to use for calculating implied volatility. Defaults to 'quasi_newton'.
+    - method (str, optional): The method to use for calculating implied volatility. Defaults to 'newton_raphson'.
     - tol (float, optional): The tolerance for convergence. Defaults to 1e-12.
     - initial_guess (float, optional): The initial guess for implied volatility. Defaults to 0.05.
     - bounds (tuple, optional): The lower and upper bounds for implied volatility. Defaults to (0.00001, 5.0).
@@ -139,50 +138,28 @@ def calc_implied_volatility(market_price, S, K, T, r, option_type, method='quasi
     """
     
     if method == 'quasi_newton':
-        return iv_quasi_newton_vectorized(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, tol=tol, initial_guess=initial_guess, bounds=bounds)
+        iv_qn = iv_quasi_newton(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, tol=tol, initial_guess=initial_guess, bounds=bounds)
+        return iv_qn
     elif method=='newton_raphson':
-        return iv_newton_raphson(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_est=initial_guess)
+        iv_nr = iv_newton_raphson(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_est=initial_guess)
+        return iv_nr
     elif method=='binary_search':
-        return iv_binary_search(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_low=initial_guess, sigma_high=5, tolerance=tol)
+        iv_bs = iv_binary_search(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_low=initial_guess, sigma_high=5, tolerance=tol)
+        return iv_bs
     elif method=='all':
-        return {'quasi_newton': iv_quasi_newton_vectorized(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, tol=tol, initial_guess=initial_guess, bounds=bounds),
-                'newton_raphson': iv_newton_raphson(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_est=initial_guess),
-                'binary_search': iv_binary_search(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_low=initial_guess, sigma_high=5, tolerance=tol)
+        iv_qn = iv_quasi_newton(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, tol=tol, initial_guess=initial_guess, bounds=bounds)
+        iv_nr = iv_newton_raphson(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_est=initial_guess)
+        iv_bs = iv_binary_search(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_low=initial_guess, sigma_high=5, tolerance=tol)
+        
+        return {'quasi_newton': iv_qn,
+                'newton_raphson': iv_nr,
+                'binary_search': iv_bs
                 }
     
-    
-
-def iv_quasi_newton_vectorized(market_price, S, K, T, r, option_type, tol=1e-15, initial_guess=0.05, bounds=(0.00001, 5.0)):
-    """
-    Calculates the implied volatility for each set of option parameters using a quasi-Newton optimization method.
-    This function iterates over vector inputs to handle multiple calculations.
-    
-    Parameters are the same as the original function but can accept NumPy arrays for vectorized inputs.
-    Returns a NumPy array of implied volatilities for each set of input parameters.
-    """
-    # Ensure inputs are NumPy arrays for vectorized operations
-    market_price, S, K, T, r = map(np.asarray, (market_price, S, K, T, r))
-    if isinstance(option_type, str):
-        option_type = np.full(market_price.shape, option_type)  # Broadcast to full array if single value
-    
-    # Initialize an array to hold the implied volatility results
-    iv_results = np.zeros(market_price.shape)
-    
-    # Iterate over each element in the input arrays
-    for i in range(len(market_price)):        
-        result = minimize(iv_objective, [initial_guess], args=(market_price[i], S[i], K[i], T[i], r[i], option_type[i]),
-                          bounds=[bounds], method='L-BFGS-B', options={'eps': tol, 'gtol': tol})
-        
-        if result.success:
-            iv_results[i] = result.x[0]  # Store the optimized volatility
-        else:
-            iv_results[i] = np.nan  # Use NaN to indicate optimization failure
-    
-    return iv_results 
 
 
 # Function to calculate implied volatility
-def iv_quasi_newton(market_price, S, K, T, r, option_type, tol=1e-15, initial_guess=0.05, bounds=(0.00001, 5.0)):
+def iv_quasi_newton(market_price, S, K, T, r, option_type, tol=1e-15, initial_guess=0.1, bounds=(0.00001, 5.0)):
     """
     Calculates the implied volatility using a quasi-Newton optimization method with scipy.optimize.minimize.
 
@@ -316,30 +293,27 @@ def calc_option_elasticity(delta, option_price, underlying_price, option_type='c
 
 
 if __name__=='__main__':
-    # take inputs from user
-    S = float(input("Enter the current price of the underlying asset: "))
-    K = float(input("Enter the strike price of the option: "))
-    r = float(input("Enter the risk-free interest rate: "))
-    T = float(input("Enter the time to expiration of the option in years: "))
-    sigma = float(input("Enter the volatility of the underlying asset: "))
-    print('European call option price:', european_call_price(S=S, K=K, r=r, T=T, sigma=sigma))
-    print('European put option price:', european_put_price(S=S, K=K, r=r, T=T, sigma=sigma))
-    
-    print('Implied volatility:', calc_implied_volatility(market_price=30, S=S, K=K, r=r, T=T, option_type='call'))
-        
-        
     # Example usage
     option_market_price = 10  # Market price of the option
     S = 100  # Underlying asset price
-    K = 100  # Strike price
-    T = 1  # Time to maturity (in years)
+    K = 125  # Strike price
+    T = 1.25  # Time to maturity (in years)
     r = 0.05  # Risk-free interest rate
+    sigma = 0.30
+    
+    print('European call option price:', european_call_price(S=S, K=K, r=r, T=T, sigma=sigma))
+    print('European put option price:', european_put_price(S=S, K=K, r=r, T=T, sigma=sigma))
+    
+    print('Implied volatility:')    
+    iv_qn = iv_quasi_newton(market_price=option_market_price, S=S, K=K, T=T, r=r, option_type='call', tol=1e-12, initial_guess=0.1, bounds=(0.00001, 5.0))
+    iv_nr = iv_newton_raphson(option_market_price, S, K, T, r, option_type='call', sigma_est = 0.1)
+    iv_bs = iv_binary_search(option_market_price, S, K, T, r, option_type='call', sigma_low = 0.001,  sigma_high = 1, tolerance = 1e-5)
+    iv_all = calc_implied_volatility(option_market_price, S, K, T, r, option_type='call', method='all', tol=1e-12, initial_guess=0.1, bounds=(0.00001, 5.0))
 
-    iv_nr = iv_newton_raphson(option_market_price, S, K, T, r)
-    iv_bs = iv_binary_search(option_market_price, S, K, T, r)
-
+    print(f"IV (Quasi-Newton): {iv_qn}")
     print(f"IV (Newton-Raphson): {iv_nr}")
     print(f"IV (Binary Search): {iv_bs}")
+    print(f"IV (All): {iv_all}")
         
     
     
