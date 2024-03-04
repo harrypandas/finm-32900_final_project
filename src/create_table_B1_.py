@@ -109,8 +109,8 @@ if __name__ == "__main__":
 	tableB1_01 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet")
 	tableB1_01 = tableB1_01.replace({float('nan'): ''})
 
-	# tableB1_02 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet")
-	# tableB1_02 = tableB1_02.replace({float('nan'): ''})
-	tableB1_02 = tableB1_01
+	tableB1_02 = pd.read_parquet(Path(OUTPUT_DIR)  / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet")
+	tableB1_02 = tableB1_02.replace({float('nan'): ''})
+	#tableB1_02 = tableB1_01
 
 	createB1(tableB1_01, tableB1_02)
