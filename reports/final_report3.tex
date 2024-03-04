@@ -1,0 +1,174 @@
+% !TeX root = report_example.tex
+\newcommand*{\MyHeaderPath}{.}% This path definition is also passed to inside the header files.
+\newcommand*{\PathToAssets}{../assets}%
+\newcommand*{\PathToOutput}{../output/}%
+\newcommand*{\PathToBibFile}{bibliography.bib}%
+
+% Suppress overfull and underfull box warnings
+\hfuzz=1000pt
+\vfuzz=1000pt
+\hbadness=10000
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% This file is compiled with XeLaTex.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{\MyHeaderPath/_article_header.tex}
+\input{\MyHeaderPath/_lean_header.tex}
+
+
+\begin{document}
+\title{
+The Puzzle of Filtering Index Options
+\\{\color{blue} \large UChicago WI 23: FINN 329\footnote{Taught by Jeremy Bejarano, jbejarano@uchicago.edu }}
+}
+% {\color{blue} \large Preliminary. Do not distribute.}
+% }
+
+\author{
+Viren Desai, Harrison Holt, Ian Hammock 
+  % \newline 
+  % \hspace{3pt} \indent \hspace{3pt}
+  % % I am immensely grateful to...
+}
+% \maketitle
+\begin{titlepage}
+% \input{cover_letter.tex}
+\maketitle
+%http://tex.stackexchange.com/questions/141446/problem-of-duplicate-identifier-when-using-bibentry-and-hyperref
+% \nobibliography*
+
+% Abstract should have fewer than 150 words
+
+\doublespacing
+\begin{abstract}
+In this article we will summarize our efforts to replicate the filtering described in appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. We provide additional insight on how these filters shape the distribution on implied volatility and moneyness. Moreover, due to the unavailability of index option data from 1985 to 1995, we focus our comparison on the dataset of 1/1996-1/2012 as well as extending this analysis forward from 2/2012 to 12/2019. Our analysis can be readily found on our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.  
+
+
+\end{abstract}
+
+
+\end{titlepage}
+
+\doublespacing
+
+
+
+\section{Replicating Table B1}
+
+In the appendix B of \citet{constantinides2013}, three levels of filters are described with the intent to minimize quoting errors in the construction of their portfolios. In this section we will summarize our implementation and briefly discuss the differences. 
+
+\subsection{Level 1} 
+This application of filters is fairly straight forward. However, an unexplainable difference occurs upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observe 2,093,744 options with a Volume = 0. Unfortunately, no more details are given in the manuscript describing this step. In order to not diverge from their data pool we choose to drop 0 options, this is reflected in our table: \ref{table:tableB1}
+
+
+\subsection {Level 2}
+
+\subsection{Level 3} 
+
+\newpage 
+
+\thispagestyle{empty}
+\begin{landscape}
+\sloppy
+\begin{table}
+
+\centering
+ \captionsetup{font={Large}}
+\caption{Table B.1}
+\resizebox{1.4\textwidth}{!}{
+\hspace*{-4cm}
+\input{\PathToOutput/tableB1.tex}
+}
+\caption*{
+  Number of observations that are removed upon application of appendix B filters. 
+}
+\label{table:tableB1}
+\end{table}
+
+
+\end{landscape}
+\newpage
+
+\section{B Filters, Implied Volatility, Moneyness} 
+
+
+
+%\begin{figure}[htbp]
+%  \centering
+%  \includesvg[width=0.8\textwidth]{\PathToOutput/svg_temp.svg} % Adjust the width as needed
+%  \caption{Your caption here.}
+%  \label{fig:example}
+%\end{figure}
+
+
+
+
+\section{Replicating Table2}
+This table describes how many options are found, go missing, or expire in the dataset. An option is found if it reappears the next trading day. An option is missing for if it does not reappear the next trading day. Multiple days missing, counts as multiple options missing. Lastly, if an option is lost and expires this is noted as expired. 
+
+We would like to note an interesting aspect of this dataset. Over 80\% of the options expire on a Saturday or a non-trading day. To handle this, we push the expiration day to the nearest Friday, presumably the nearest trading day. However, there are quite a few edge cases which would explain the discrepancy between our analysis and \citet{constantinides2013}. Further investigation is required. 
+
+%To implement this table we use pandas market calendars to produce an array of NYSE trading days. We then assign an integer to each day and merge this to our dataframe. To determine the time an option is lost, we use a relative distance argument and take differences using the integers. This is much faster than subtracting datetime objects with conditionals on if we're getting a trading day. 
+
+\newpage 
+
+\thispagestyle{empty}
+\begin{landscape}
+
+\begin{table}
+    \centering
+   \captionsetup{font={Large}}
+    \caption{ Table  2 Sample}
+    \label{t2s}
+\resizebox{1.4\textwidth}{!}{
+\hspace*{-4cm}
+  \input{\PathToOutput/table2.tex}
+  }
+  \caption*{Tracking the instances options are found, missing or expired.}
+\end{table}
+
+\end{landscape}
+\newpage
+
+\section{Data}
+
+Our option data is queried from OptionMetrics provided by Wharton Research Data Services (WRDS). We limit the query to SECID = 108105, S\&P 500 Index - SPX. We use the three month Tbill as our interest rate, this is from the Federal Reserve Board's H15 report supplied by WRDS. 
+
+In comparison to their data, we have pulled 184 more options than them. It is unclear where the discrepancy lies. First, we assumed we were off by a day however this will truncate or elongate the dataset by over 300 points. We credit the discrepancy to OptionMetrics updating their data to be more accurate. 
+
+The following links contain the documentation and helpful links for the WRDS database: 
+\begin{itemize}
+\item \href{https://wrds-www.wharton.upenn.edu/pages/support/manuals-and-overviews/optionmetrics/wrds-overview-optionmetrics/}{Option Metrics Overview} 
+\item \href{https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/opprcd2023/ }{Option Metric Keys}
+\item \href{https://wrds-www.wharton.upenn.edu/pages/get-data/optionmetrics/ivy-db-us/options/option-prices/}{Option Metrics Query} 
+\item \href{https://wrds-www.wharton.upenn.edu/data-dictionary/frb_all/rates_daily/}{Federal Reserve Report} 
+\end{itemize}
+
+
+
+\newpage
+\bibliographystyle{jpe}
+\bibliography{bibliography.bib}  % list here all the bibliographies that you need. 
+
+
+%% changed latex file? 
+% \bibliography{\PathToBibFile}
+% \printbibliography
+
+%\newpage
+%\begin{appendices}
+%\section{Proofs}
+%
+%TODO
+%
+%
+%
+%\section{Recycle Bin}
+%{\textbf{(Short-term parking spot for material that may be re-used or deleted at a later time)}}
+%
+%
+%TODO
+%
+%\end{appendices}
+%\end{document}
