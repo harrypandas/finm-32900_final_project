@@ -67,30 +67,38 @@ def filter_implied_interest_rate(optm_l2_mny):
        Implied interest rate field must be defined before running this function.
     """
     
-    optm_l2_mny['best_mid'] = (optm_l2_mny['best_bid'] + optm_l2_mny['best_offer']) / 2
+    optm_l2_mny['mid_price'] = (optm_l2_mny['best_bid'] + optm_l2_mny['best_offer']) / 2
 
     call_options = optm_l2_mny.loc[optm_l2_mny['cp_flag'] == 'C'].reset_index(drop=True)
     put_options = optm_l2_mny.loc[optm_l2_mny['cp_flag'] == 'P'].reset_index(drop=True)
 
     matching_calls, matching_puts = f3.build_put_call_pairs(call_options, put_options)
-
+    # reset index to merge
+    matching_calls.reset_index(inplace=True)
+    matching_puts.reset_index(inplace=True)
+    
     matched_options = pd.merge(matching_calls, matching_puts, on=['date', 'exdate', 'strike_price', 'sec_price'], suffixes=('_C', '_P')).reset_index()
-
+    
     matched_options = f3.calc_implied_interest_rate(matched_options)
-    neg_int = matched_options.loc[matched_options['impl_int_rate'] < 0][['date', 'exdate', 'strike_price', 'sec_price']].drop_duplicates()
+    
+    neg_int = matched_options.loc[matched_options['pc_parity_int_rate'] < 0][['date', 'exdate', 'strike_price', 'sec_price']].drop_duplicates()
     optm_l2_int = pd.merge(optm_l2_mny, neg_int, on=['date', 'exdate', 'strike_price', 'sec_price'], how='outer', indicator=True)
     optm_l2_int = optm_l2_int.loc[optm_l2_int['_merge'] == 'left_only'].drop(columns='_merge')  
-    med_impl_int = matched_options.loc[(matched_options['mnyns_C']>=0.95) & (matched_options['mnyns_C']<=1.05)].groupby(['time_to_maturity_C'])['impl_int_rate'].median().reset_index()
-    med_impl_int = med_impl_int.loc[med_impl_int['impl_int_rate']>=0]
+    med_impl_int = matched_options.loc[(matched_options['mnyns_C']>=0.95) & (matched_options['mnyns_C']<=1.05)].groupby(['time_to_maturity_C'])['pc_parity_int_rate'].median().reset_index()
+    med_impl_int = med_impl_int.loc[med_impl_int['pc_parity_int_rate']>=0]
     optm_l2_int = pd.merge(optm_l2_int, med_impl_int, left_on='time_to_maturity', right_on='time_to_maturity_C', how='left', indicator=True)
-    optm_l2_int['impl_int_rate'] = optm_l2_int['impl_int_rate'].ffill()
+    optm_l2_int['pc_parity_int_rate'] = optm_l2_int['pc_parity_int_rate'].ffill()
+    
     return optm_l2_int
+
 
 def filter_unable_compute_iv(df):
     """Unable to Compute IV Filter: Filter options where implied volatility cannot be computed.
     """
+
     df = df.loc[df['impl_volatility'].notna()]
     return df
+
 
 def apply_l2_filters(df):
     """Apply all level 2 filters to the dataframe.
