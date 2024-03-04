@@ -241,7 +241,7 @@ def task_create_Table2():
     'actions': [
     "ipython ./src/create_table_2_.py"
     ], 
-   # "targets": targets,
+    "targets": targets,
     "file_dep": file_dep,
     'clean': True,
     "verbosity": 2,
