@@ -14,9 +14,13 @@
 
 
 \begin{document}
+
+\pagenumbering{gobble}
+
+
 \title{
 The Puzzle of Filtering Index Options
-\\{\color{blue} \large UChicago WI 23: FINN 329\footnote{Taught by Jeremy Bejarano, jbejarano@uchicago.edu }}
+\\{\color{blue} \large UChicago WI 24: FINN 329\footnote{Taught by Jeremy Bejarano, jbejarano@uchicago.edu }}
 }
 % {\color{blue} \large Preliminary. Do not distribute.}
 % }
@@ -28,7 +32,9 @@ Viren Desai, Harrison Holt, Ian Hammock
   % % I am immensely grateful to...
 }
 % \maketitle
+
 \begin{titlepage}
+
 % \input{cover_letter.tex}
 \maketitle
 %http://tex.stackexchange.com/questions/141446/problem-of-duplicate-identifier-when-using-bibentry-and-hyperref
@@ -50,7 +56,7 @@ In this article we will summarize our efforts to replicate the filtering describ
 \doublespacing
 
 
-
+\pagenumbering{arabic}
 \section{Replicating Table B1}
 
 In the appendix B of \citet{constantinides2013}, three levels of filters are described with the intent to minimize quoting errors in the construction of their portfolios. In this section we will summarize our implementation and briefly discuss the differences. Our results are summarized in \autoref{table:tableB1}. 
@@ -83,9 +89,13 @@ This application of filters is fairly straight forward. However, an unexplainabl
 \label{table:tableB1}
 \end{table}
 
-
+\vfill
+\raisebox{-4cm}{\makebox[\linewidth]{\thepage}}
 \end{landscape}
 \newpage
+
+
+
 
 \section{B Filters, Implied Volatility, Moneyness} 
 
@@ -105,7 +115,7 @@ This application of filters is fairly straight forward. However, an unexplainabl
 
 We would like to note an interesting aspect of this dataset. Over 80\% of the options expire on a Saturday or a non-trading day. To handle this, we push the expiration day to the nearest Friday, presumably the nearest trading day. However, there are quite a few edge cases which would explain the discrepancy between our analysis and \citet{constantinides2013}. Further investigation is required. 
 
-%To implement this table we use pandas market calendars to produce an array of NYSE trading days. We then assign an integer to each day and merge this to our dataframe. To determine the time an option is lost, we use a relative distance argument and take differences using the integers. This is much faster than subtracting datetime objects with conditionals on if we're getting a trading day. 
+%To implement this table we use pandas market calendars to produce an array of NYSE trading days. We then assign an integer to each day and merge this to our dataframe. To determine the time an option is lost, we use a relative distance argument and take differences using the integers. This is much faster than subtracting datetime objects with conditionals on if we're getting a trading day. adf
 
 
 
@@ -124,10 +134,12 @@ We would like to note an interesting aspect of this dataset. Over 80\% of the op
 \hspace*{-4cm}
   \input{\PathToOutput/table2.tex}
   }
+
   \caption*{Tracking the instances options are found, missing or expired.}
 \label{tab:t2}
 \end{table}
-
+\vfill
+\raisebox{-6.5cm}{\makebox[\linewidth]{\thepage}}
 \end{landscape}
 \newpage
 

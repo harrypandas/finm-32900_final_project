@@ -251,7 +251,6 @@ def task_create_Table2():
 
 
 def task_compile_latex_docs():
-    """Example plots"""
     file_dep = [
         "./reports/final_report.tex",
     	"./src/create_table_B1_.py",
@@ -270,8 +269,9 @@ def task_compile_latex_docs():
 
             # "latexmk -xelatex -cd ./reports/sample_table.tex",  # Compile
             # "latexmk -xelatex -c -cd ./reports/sample_table.tex",  # Clean
-            "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
             "latexmk -xelatex -c -cd ./reports/final_report.tex",   # Clean
+            "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
+            
         ],
         "targets": targets,
         "file_dep": file_dep,
@@ -279,8 +279,21 @@ def task_compile_latex_docs():
     }
 
 
+def task_clean_latex_docs():
+    file_dep = [
+        "./reports/final_report.tex",
+        "./reports/final_report.pdf"
+    ,
+    ]
 
+    return {
+        "actions": [
 
+            "latexmk -xelatex -c -cd ./reports/final_report.tex",   # Clean
+        ],
+        "file_dep": file_dep,
+        "clean": True,
+    }
 # def task_convert_notebooks_to_scripts():
 #     """Preps the notebooks for presentation format.
 #     Execute notebooks with summary stats and plots and remove metadata.
