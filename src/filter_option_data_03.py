@@ -19,7 +19,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 import pandas as pd
-#pd.set_option('display.max_columns', None)
+pd.set_option('display.max_columns', None)
 
 import numpy as np
 import datetime
@@ -210,10 +210,11 @@ def test_price_strike_match(matching_calls_puts):
     Returns:
     bool: True if the strike prices and security prices of matching calls and puts are equal, False otherwise.
     """
+    #print(matching_calls_puts)
     try:
         return (np.allclose(matching_calls_puts['strike_price_C'], matching_calls_puts['strike_price_P'])) and (np.allclose(matching_calls_puts['sec_price_C'], matching_calls_puts['sec_price_P']))# and (np.allclose(matching_calls_puts['tb_m3_C'], matching_calls_puts['tb_m3_P']))
     except KeyError:
-        if 'strike_price' in matching_calls_puts.index.names and 'sec_price' in matching_calls_puts.index.names:
+        if 'strike_price' in matching_calls_puts.columns and 'sec_price' in matching_calls_puts.columns:
             return True
         else:
             return False
@@ -236,8 +237,15 @@ def calc_implied_interest_rate(matched_options):
     # underlying price
     if test_price_strike_match(matched_options):
         print(" |-- PCP filter: Check ok --> Underlying prices, strike prices of put and call options match exactly.")
-        S = matched_options['sec_price_C']
-        K = matched_options['strike_price_C']  
+        try:
+            S = matched_options['sec_price_C']
+        except KeyError:
+            S = matched_options['sec_price']
+        
+        try:
+            K = matched_options['strike_price_C']  
+        except KeyError:
+            K = matched_options['strike_price']
         
         # 1/T = 1/time to expiration in years
         T_inv = np.power((matched_options.reset_index()['exdate']-matched_options.reset_index()['date'])/datetime.timedelta(days=365), -1)
