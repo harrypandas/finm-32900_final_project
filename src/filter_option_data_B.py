@@ -10,6 +10,8 @@ import filter_option_data_01 as f1
 import filter_option_data_02 as f2
 import filter_option_data_03 as f3
 
+from functools import partial
+
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 WRDS_USERNAME = config.WRDS_USERNAME
@@ -32,7 +34,6 @@ def getLengths(df):
 
 
 
-
 def getB1info(func, df, TB, level, name, Lprev = 0):
 	df2 = func(df)
 	L1 = len(df2)
@@ -43,7 +44,7 @@ def getB1info(func, df, TB, level, name, Lprev = 0):
 def executeLevel(lvl, steps, filters, df, dfTB, save_path): 
 	L = len(df)
 	for step, filt in zip(steps, filters):
-		df, dfTB, L = getB1info(filt, df, dfTB, lvl, step, L)
+		df, dfTB, L = getB1info(func=filt, df=df, TB=dfTB, level=lvl, name=step, Lprev=L)
 	dfTB['All' + lvl[6]] = [lvl, float('nan'), L]
 	df.to_parquet(save_path)
 	return df, dfTB
@@ -86,8 +87,10 @@ def appendixBfilter(start=START_DATE_01, end=END_DATE_01):
 
 	lvlThree = 'Level 3 filters'
 	save_path_L3 = DATA_DIR.joinpath( f"intermediate/data_{start[:7]}_{end[:7]}_L3filter.parquet")
+	
 	lvlThreeSteps = ['IV filter', 'Put-call parity filter']
-	lvlThreeFilters =[f3.IV_filter, f3.put_call_filter]
+	lvlThreeFilters =[partial(f3.IV_filter, date_range=f'{start[:7]}_{end[:7]}'),
+                   partial(f3.put_call_filter, date_range=f'{start[:7]}_{end[:7]}')]
 	
 
 
