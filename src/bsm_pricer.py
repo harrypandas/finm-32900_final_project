@@ -1,18 +1,5 @@
 """
 This module contains functions for pricing European call and put options using the Black-Scholes-Merton model, as well as calculating implied volatility.
-
-Functions:
-- european_call_price: Calculates the price of a European call option.
-- european_put_price: Calculates the price of a European put option.
-- norm_cdf: Calculates the cumulative distribution function (CDF) of the standard normal distribution.
-- norm_pdf: Calculates the probability density function (PDF) of the standard normal distribution.
-- calc_vega: Calculates the option vega using the Black-Scholes-Merton model.
-- iv_objective: Objective function to calculate implied volatility for quasi-Newton methods.
-- calc_implied_volatility: Calculates the implied volatility of an option using various methods.
-- iv_quasi_newton_vectorized: Calculates the implied volatility for each set of option parameters using a quasi-Newton optimization method.
-- iv_quasi_newton: Calculates the implied volatility using a quasi-Newton optimization method (not vectorized, so will run slower).
-- iv_newton_raphson: Calculates the implied volatility using the Newton-Raphson method.
-- iv_binary_search: Calculates the implied volatility using binary search.
 """
 
 import math
@@ -134,18 +121,18 @@ def calc_implied_volatility(market_price, S, K, T, r, option_type, method='newto
     - bounds (tuple, optional): The lower and upper bounds for implied volatility. Defaults to (0.00001, 5.0).
 
     Returns:
-    - float or dict: The implied volatility of the option. If method is 'all', returns a dictionary containing the implied volatilities calculated using different methods.
+    - dict: The implied volatility of the option. If method is 'all', returns a dictionary containing the implied volatilities calculated using different methods.
     """
     
     if method == 'quasi_newton':
         iv_qn = iv_quasi_newton(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, tol=tol, initial_guess=initial_guess, bounds=bounds)
-        return iv_qn
+        return {'quasi_newton': iv_qn}
     elif method=='newton_raphson':
         iv_nr = iv_newton_raphson(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_est=initial_guess)
-        return iv_nr
+        return {'newton_raphson': iv_nr}
     elif method=='binary_search':
         iv_bs = iv_binary_search(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_low=initial_guess, sigma_high=5, tolerance=tol)
-        return iv_bs
+        return {'binary_search': iv_bs}
     elif method=='all':
         iv_qn = iv_quasi_newton(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, tol=tol, initial_guess=initial_guess, bounds=bounds)
         iv_nr = iv_newton_raphson(market_price=market_price, S=S, K=K, T=T, r=r, option_type=option_type, sigma_est=initial_guess)
@@ -156,6 +143,25 @@ def calc_implied_volatility(market_price, S, K, T, r, option_type, method='newto
                 'binary_search': iv_bs
                 }
     
+
+def check_nearest_iv(iv_results: dict, check_iv: float):
+    """
+    Finds the nearest IV value in the given dictionary of IV results to the specified check IV value.
+
+    Parameters:
+    - iv_results (dict): A dictionary containing IV results, where the keys are IV methods and the values are calculated IVs.
+    - check_iv (float): The IV value to compare against.
+
+    Returns:
+    - list: A list containing the nearest IV method, nearest IV value, and the check IV value.
+    """
+
+    nearest_method = min([(iv_method, abs(calculated_iv - check_iv) if not (np.isnan(abs(calculated_iv - check_iv))) else 1e11) for iv_method, calculated_iv in iv_results.items()], key=lambda x: x[1])[0]
+    nearest_iv = iv_results[nearest_method]
+    print(f'Nearest IV: {nearest_iv} ({nearest_method})')
+
+    return [nearest_method, nearest_iv, check_iv]
+
 
 
 # Function to calculate implied volatility
@@ -195,7 +201,8 @@ def iv_quasi_newton(market_price, S, K, T, r, option_type, tol=1e-15, initial_gu
     if result.success:
         return result.x[0]  # Return the optimized volatility
     else:
-        raise ValueError("Optimization was not successful. Try different bounds or initial guess.")
+        print(ValueError(f">> Optimization was not successful. S={S}, K={K}, T={T}, r={r}, option_type={option_type}, market_price={market_price}"))
+        return np.nan
         
 
 
