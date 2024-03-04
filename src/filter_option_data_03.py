@@ -26,6 +26,9 @@ import filter_option_data_01 as f1
 import wrds
 import bsm_pricer as bsm
 
+from functools import partial
+import time
+
 # environment variables
 WRDS_USERNAME = Path(config.WRDS_USERNAME)
 DATA_DIR = Path(config.DATA_DIR)
@@ -37,6 +40,27 @@ END_DATE_02 = config.END_DATE_02
 
 
 # Helper functions
+def functimer(func):
+    """
+    A decorator function that measures the execution time of a given function.
+
+    Parameters:
+    func (function): The function to be timed.
+
+    Returns:
+    function: The wrapped function.
+
+    """
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        execution_time = end_time - start_time
+        print(f" |-- !! Execution time: {func.__name__} --> {execution_time:,.5f} seconds")
+        return result
+    return wrapper
+
+
 def fit_and_store_curve(group):
     """
     Fit a quadratic curve to the given group of data points and store the fitted values.
@@ -47,10 +71,6 @@ def fit_and_store_curve(group):
     Returns:
         pandas.DataFrame: The group of data points with the fitted values stored in the 'fitted_iv' column.
     """
-    # Drop rows with NaN in 'moneyness' or 'log_iv'
-    group = group.dropna(subset=['mnyns', 'log_iv'])
-    if len(group) < 3:  # Need at least 3 points to fit a quadratic curve
-        return group
     try:
         # Fit the quadratic curve
         coefficients = np.polyfit(group['mnyns'], group['log_iv'], 2)
@@ -59,6 +79,27 @@ def fit_and_store_curve(group):
     except np.RankWarning:
         print("Polyfit may be poorly conditioned")
     return group
+
+
+
+@functimer
+def apply_quadratic_iv_fit(l2_data):
+    """
+    Apply quadratic curve fitting to the input data.
+
+    Parameters:
+    l2_data (DataFrame): The input data to which the quadratic curve fitting function will be applied.
+
+    Returns:
+    DataFrame: The input data with the quadratic curve fitting applied.
+    """
+    # Apply the quadratic curve fitting function to the data
+    l2_data = l2_data.dropna(subset=['mnyns', 'log_iv']).groupby(['date', 'exdate', 'cp_flag']).filter(lambda group: len(group) >= 3)
+    
+    l2_data = l2_data.groupby(['date', 'exdate', 'cp_flag']).apply(fit_and_store_curve)
+    
+    return l2_data
+
 
 
 def calc_relative_distance(series1, series2, method='percent'):
@@ -88,7 +129,7 @@ def calc_relative_distance(series1, series2, method='percent'):
     
     return result
 
-    
+@functimer  
 def mark_outliers(row, std_devs, outlier_threshold):
     """
     Determines if a data point is an outlier based on its moneyness_bin and relative distance from the fitted curve.
@@ -171,7 +212,7 @@ def calc_implied_interest_rate(matched_options):
     
     # underlying price
     if test_price_strike_match(matched_options):
-        print(" |-- -- Underlying prices, strike prices of put and call options match exactly.")
+        print(" |-- PCP filter: Check ok --> Underlying prices, strike prices of put and call options match exactly.")
         S = matched_options['sec_price_C']
         K = matched_options['strike_price_C']  
         
@@ -198,7 +239,7 @@ def pcp_filter_outliers(matched_options, int_rate_rel_distance_func, outlier_thr
     - outlier_threshold (float): Threshold for flagging outliers.
 
     Returns:
-    - l3_filtered_options (DataFrame): DataFrame with outliers filtered out.
+    - l3_filtered_options (DataFrame): DataFrame with outliers filtered out, structured in long-form (like the original L2 data).
     """
     matched_options['rel_distance_int_rate'] = calc_relative_distance(matched_options['pc_parity_int_rate'], matched_options['daily_median_rate'], method=int_rate_rel_distance_func)
     # fill 3905 nans...
@@ -254,73 +295,20 @@ def iv_filter_outliers(l2_data, iv_distance_method, iv_outlier_threshold):
     return l3_data_iv_only
 
 
-# charts and checks
+
 def build_check_results():
+    """
+    Builds and returns a DataFrame containing check results for level 3 filters.
+
+    Returns:
+        pandas.DataFrame: DataFrame with check results for level 3 filters.
+    """
     check_results = pd.DataFrame(index=pd.MultiIndex.from_product([['Level 3 filters'], ['IV filter', 'Put-call parity filter', 'All']]),
                              columns=pd.MultiIndex.from_product([['Berkeley', 'OptionMetrics'], ['Deleted', 'Remaining']]))
     check_results.loc[['Level 3 filters'], ['Berkeley', 'OptionMetrics']] = [[10865, np.nan, 67850, np.nan], [10298, np.nan,46138, np.nan], [np.nan, 173500,np.nan, 962784]]
 
     return check_results.loc[:, 'OptionMetrics']
 
-
-def build_l2_data_chart(l2_data, date_range):
-    fig, ax = plt.subplots(2,2, figsize=(12,8))
-    ax[0,0].hist(l2_data['impl_volatility'], bins=250, color='darkblue')
-    ax[0,0].set_xlabel('IV')
-    ax[0,0].set_ylabel('Frequency')
-    ax[0,0].set_title('Distribution of IV')
-    ax[0,0].grid()
-
-    ax[0,1].hist(l2_data['log_iv'], bins=250, color='grey')
-    ax[0,1].set_xlabel('log(IV)')
-    ax[0,1].set_ylabel('Frequency')
-    ax[0,1].set_title('Distribution of log(IV)')
-    ax[0,1].grid()
-
-    # options with nan implied volatility
-    # calls only
-    nan_iv = l2_data[(l2_data['cp_flag'] == 'C') & (l2_data['impl_volatility'].isna())]
-    ax[1,0].scatter(x=nan_iv['date'], y=nan_iv['mnyns'], color='blue', alpha=0.1, s=10, label='Calls')
-
-    # puts only
-    nan_iv = l2_data[(l2_data['cp_flag'] == 'P') & (l2_data['impl_volatility'].isna())]
-    ax[1,0].scatter(x=nan_iv['date'], y=nan_iv['mnyns'], color='red', alpha=0.1, s=10, label='Puts')
-
-    ax[1,0].set_xlabel('Trade Date')
-    ax[1,0].set_ylabel('Moneyness')
-    ax[1,0].set_title('Moneyness of Calls with NaN IV')
-    ax[1,0].grid()
-    ax[1,0].legend()
-    ax[1,0].grid()
-
-
-    # percentage of NaN IV
-    nan_percentage = l2_data.groupby(['date', 'cp_flag'])['impl_volatility'].apply(lambda x: (x.isna().sum() / len(x))*100)
-
-    # calls only
-    nan_percentage_calls = nan_percentage[nan_percentage.index.get_level_values(1)=='C']
-    ax[1,1].scatter(x=nan_percentage_calls.index.get_level_values(0), y=nan_percentage_calls.values, color='blue', alpha = 0.1, s=10, label='Calls')
-
-    # puts only
-    nan_percentage_puts = nan_percentage[nan_percentage.index.get_level_values(1)=='P']
-    ax[1,1].scatter(x=nan_percentage_puts.index.get_level_values(0), y=nan_percentage_puts.values, color='red', alpha = 0.1, s=10, label='Puts')
-
-    ax[1,1].set_xlabel('Trade Date')
-    ax[1,1].set_ylabel('Percentage of NaN IV')
-    ax[1,1].set_title('Percentage of NaN IV by Trade Date')
-    ax[1,1].legend()
-    ax[1,1].grid()
-
-    # Hide ax[1,2]
-    #ax[1,2].axis('off')
-
-    plt.suptitle(f'Level 2 Filtered Data: {date_range.replace("_", " to ")}')
-    plt.tight_layout()
-    # plt.show()
-    
-    # fig.savefig(OUTPUT_DIR / f'L3_fig1_post_L2filter_{date_range}.svg')
-    fig.savefig(OUTPUT_DIR / f'L3_fig1_post_L2filter_{date_range}.png')
-    fig.savefig(OUTPUT_DIR / f'L3_fig1_post_L2filter_{date_range}.pdf')
 
 
 def nan_iv_in_l2_data(l2_data, date_range):
@@ -347,22 +335,128 @@ def nan_iv_in_l2_data(l2_data, date_range):
     return nan_iv_summary
 
 
-def apply_quadratic_iv_fit(l2_data):
+
+def calc_relative_distance_stats(l3_data_iv_only, date_range):
     """
-    Apply quadratic curve fitting to the input data.
+    Calculate the statistics of the relative distance of options based on the given data and date range.
 
     Parameters:
-    l2_data (DataFrame): The input data to which the quadratic curve fitting function will be applied.
+    l3_data_iv_only (DataFrame): DataFrame containing the option data with 'rel_distance_iv', 'mnyns' columns.
+    date_range (str): Date range for which the statistics are calculated.
 
     Returns:
-    DataFrame: The input data with the quadratic curve fitting applied.
+    DataFrame: DataFrame containing the statistics of the relative distance of options.
+
     """
-    # Apply the quadratic curve fitting function to the data
-    l2_data = l2_data.groupby(['date', 'exdate', 'cp_flag']).apply(fit_and_store_curve)
-    return l2_data
+    ntm_rel_dist = l3_data_iv_only[(l3_data_iv_only['mnyns'] < 1.1) & (l3_data_iv_only['mnyns'] > 0.9)].describe()['rel_distance_iv'].to_frame().rename(columns={'rel_distance_iv': 'Near-The-Money'})
+    fftm_rel_dist = l3_data_iv_only[(l3_data_iv_only['mnyns'] > 1.1) | (l3_data_iv_only['mnyns'] < 0.9)].describe()['rel_distance_iv'].to_frame().rename(columns={'rel_distance_iv': 'Far-From-The-Money Options'})
+    rel_dist_stats = pd.concat([ntm_rel_dist, fftm_rel_dist], axis=1)
+    
+    rel_dist_stats.style.format('{:,.2f}').set_caption('Relative Distance Stats')
+    rel_dist_stats.to_latex(OUTPUT_DIR / f'L3_rel_dist_stats_{date_range}.tex')
+    
+    return rel_dist_stats
 
 
+###### CHARTS ######
+def build_l2_data_chart(l2_data, date_range):
+    """
+    Builds a chart to visualize the level 2 filtered data.
+
+    Parameters:
+    l2_data (DataFrame): The level 2 filtered data.
+    date_range (str): The date range for the chart.
+
+    Returns:
+    None
+    """
+
+    fig, ax = plt.subplots(2,3, figsize=(12,8))
+    ax[0,0].hist(l2_data['impl_volatility'], bins=250, color='darkblue')
+    ax[0,0].set_xlabel('IV')
+    ax[0,0].set_ylabel('Frequency')
+    ax[0,0].set_title('Distribution of IV')
+    ax[0,0].grid()
+
+    ax[0,1].hist(l2_data['log_iv'], bins=250, color='grey')
+    ax[0,1].set_xlabel('log(IV)')
+    ax[0,1].set_ylabel('Frequency')
+    ax[0,1].set_title('Distribution of log(IV)')
+    ax[0,1].grid()
+
+    l2_data = l2_data.set_index(['date', 'exdate', 'cp_flag'])
+    # IV curves for calls and puts, prior to level 3 filters
+    ax[1,0].scatter(x=l2_data.xs('C', level='cp_flag')['mnyns'], y=np.exp(l2_data.xs('C', level='cp_flag')['log_iv']), color='blue', alpha=0.1, label='IV')
+    ax[1,0].set_xlabel('Moneyness')
+    ax[1,0].set_ylabel('IV')
+    ax[1,0].set_title('IV vs Moneyness (Calls)')
+
+    ax[1,1].scatter(x=l2_data.xs('P', level='cp_flag')['mnyns'], y=np.exp(l2_data.xs('P', level='cp_flag')['log_iv']), color='red', alpha=0.1, label='IV')
+    ax[1,1].set_xlabel('Moneyness')
+    ax[1,1].set_ylabel('IV')
+    ax[1,1].set_title('IV vs Moneyness (Puts)')
+    
+    # options with nan implied volatility
+    l2_data = l2_data.reset_index()
+    # calls only
+    nan_iv_calls = l2_data[(l2_data['cp_flag'] == 'C') & (l2_data['impl_volatility'].isna())]
+    # puts only
+    nan_iv_puts = l2_data[(l2_data['cp_flag'] == 'P') & (l2_data['impl_volatility'].isna())]
+    
+    if len(nan_iv_calls)==0 and len(nan_iv_puts)==0:
+        print(" |-- IV filter: No NaN IV records for calls or puts in L2 data")
+        ax[0,2].axis('off')
+        ax[1,2].axis('off')
+        
+    else:
+        ax[0,2].scatter(x=nan_iv_calls['date'], y=nan_iv_calls['mnyns'], color='blue', alpha=0.1, s=10, label='Calls')
+        ax[0,2].scatter(x=nan_iv_puts['date'], y=nan_iv_puts['mnyns'], color='red', alpha=0.1, s=10, label='Puts')
+
+        ax[0,2].set_xlabel('Trade Date')
+        ax[0,2].set_ylabel('Moneyness')
+        ax[0,2].set_title('Moneyness of Calls with NaN IV')
+        ax[0,2].grid()
+        ax[0,2].legend()
+        ax[0,2].grid()
+
+        # percentage of NaN IV
+        nan_percentage = l2_data.groupby(['date', 'cp_flag'])['impl_volatility'].apply(lambda x: (x.isna().sum() / len(x))*100)
+
+        # calls only
+        nan_percentage_calls = nan_percentage[nan_percentage.index.get_level_values(1)=='C']
+        ax[1,2].scatter(x=nan_percentage_calls.index.get_level_values(0), y=nan_percentage_calls.values, color='blue', alpha = 0.1, s=10, label='Calls')
+
+        # puts only
+        nan_percentage_puts = nan_percentage[nan_percentage.index.get_level_values(1)=='P']
+        ax[1,2].scatter(x=nan_percentage_puts.index.get_level_values(0), y=nan_percentage_puts.values, color='red', alpha = 0.1, s=10, label='Puts')
+
+        ax[1,2].set_xlabel('Trade Date')
+        ax[1,2].set_ylabel('Percentage of NaN IV')
+        ax[1,2].set_title('Percentage of NaN IV by Trade Date')
+        ax[1,2].legend()
+        ax[1,2].grid()
+    
+    plt.suptitle(f'Level 2 Data (Before L3 Filters): {date_range.replace("_", " to ")}')
+    plt.tight_layout()
+    # plt.show()
+    
+    # fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig1_post_L2filter.svg')
+    fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig1_post_L2filter.png')
+    # fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig1_post_L2filter.pdf')
+    
+    
 def build_l2_fitted_iv_chart(l2_data, date_range):
+    """
+    Builds a Level 2 Fitted IV Chart using the given l2_data and date_range.
+
+    Parameters:
+    l2_data (DataFrame): The Level 2 data containing the necessary columns.
+    date_range (str): The date range for the chart title.
+
+    Returns:
+    None
+    """
+
     fig, ax = plt.subplots(2,3, figsize=(12,8))
 
     ax[0,0].hist(l2_data['impl_volatility'], bins=250, color='darkblue')
@@ -404,12 +498,23 @@ def build_l2_fitted_iv_chart(l2_data, date_range):
     plt.tight_layout()
     # plt.show()
     
-    #fig.savefig(OUTPUT_DIR / f'L3_fig2_L2fitted_iv_{date_range}.svg')
-    fig.savefig(OUTPUT_DIR / f'L3_fig2_L2fitted_iv_{date_range}.png')
-    fig.savefig(OUTPUT_DIR / f'L3_fig2_L2fitted_iv_{date_range}.pdf')
+    #fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig2_L2fitted_iv.svg')
+    fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig2_L2fitted_iv.png')
+    # fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig2_L2fitted_iv.pdf')
     
 
 def build_l3_data_iv_only_chart(l3_data_iv_only, date_range):
+    """
+    Build a chart with multiple subplots to visualize the distribution and relationships of IV data.
+
+    Parameters:
+    l3_data_iv_only (DataFrame): DataFrame containing IV data.
+    date_range (str): Date range for the chart title.
+
+    Returns:
+    None
+    """
+
     fig, ax = plt.subplots(3,3, figsize=(12,12))
 
     ax[0,0].hist(l3_data_iv_only['impl_volatility'], bins=250, color='darkblue')
@@ -465,23 +570,24 @@ def build_l3_data_iv_only_chart(l3_data_iv_only, date_range):
     plt.tight_layout()
     # plt.show()
     
-    #fig.savefig(OUTPUT_DIR / f'L3_fig3_IV_filter_only_{date_range}.svg')
-    fig.savefig(OUTPUT_DIR / f'L3_fig3_IV_filter_only_{date_range}.png')
-    fig.savefig(OUTPUT_DIR / f'L3_fig3_IV_filter_only_{date_range}.pdf')
+    #fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig3_IV_filter_only.svg')
+    fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig3_IV_filter_only.png')
+    # fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig3_IV_filter_only.pdf')
 
-
-def calc_relative_distance_stats(l3_data_iv_only, date_range):
-    ntm_rel_dist = l3_data_iv_only[(l3_data_iv_only['mnyns'] < 1.1) & (l3_data_iv_only['mnyns'] > 0.9)].describe()['rel_distance_iv'].to_frame().rename(columns={'rel_distance_iv': 'Near-The-Money'})
-    fftm_rel_dist = l3_data_iv_only[(l3_data_iv_only['mnyns'] > 1.1) | (l3_data_iv_only['mnyns'] < 0.9)].describe()['rel_distance_iv'].to_frame().rename(columns={'rel_distance_iv': 'Far-From-The-Money Options'})
-    rel_dist_stats = pd.concat([ntm_rel_dist, fftm_rel_dist], axis=1)
-    
-    rel_dist_stats.style.format('{:,.2f}').set_caption('Relative Distance Stats')
-    rel_dist_stats.to_latex(OUTPUT_DIR / f'L3_rel_dist_stats_{date_range}.tex')
-    
-    return rel_dist_stats
 
 
 def build_l3_data_iv_pcp_chart(l3_filtered_options, date_range):
+    """
+    Builds a chart displaying various distributions and scatter plots based on Level 3 filtered options data.
+
+    Parameters:
+    l3_filtered_options (DataFrame): The Level 3 filtered options data.
+    date_range (str): The date range for the chart.
+
+    Returns:
+    None
+    """
+
     fig, ax = plt.subplots(3,3, figsize=(12,12))
 
     chart_data = l3_filtered_options.reset_index().set_index(['date', 'exdate', 'cp_flag'])
@@ -539,42 +645,116 @@ def build_l3_data_iv_pcp_chart(l3_filtered_options, date_range):
     plt.tight_layout()
     # plt.show()
     
-    #fig.savefig(OUTPUT_DIR / f'L3_fig4_IV_and_PCP_{date_range}.svg')
-    fig.savefig(OUTPUT_DIR / f'L3_fig4_IV_and_PCP_{date_range}.png')
-    fig.savefig(OUTPUT_DIR / f'L3_fig4_IV_and_PCP_{date_range}.pdf')
+    #fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig4_IV_and_PCP.svg')
+    fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig4_IV_and_PCP.png')
+    # fig.savefig(OUTPUT_DIR / f'L3_{date_range}_fig4_IV_and_PCP.pdf')
 
 
-
-def run_filter(date_range, iv_only=False):
+def get_filepaths(date_range):
     """
-    Runs the level 3 filter on option data.
-
-    Args:
-        date_range (str): The date range for the option data.
-        iv_only (bool, optional): If True, only applies the IV filter. 
-            If False, applies both the IV filter and the PCP filter. 
-            Defaults to False.
-
+    Returns the filepaths for the input and output files based on the given date range.
+    
+    Parameters:
+        date_range (str): The date range for which the filepaths are generated.
+        
     Returns:
-        pandas.DataFrame: The final result of the level 3 filter.
-
+        tuple: A tuple containing the filepaths for the input and output files.
+            - l2_input_file (str): The filepath for the L2 input file.
+            - l3_iv_only_output_file (str): The filepath for the L3 IV-only output file.
+            - l3_output_file (str): The filepath for the L3 output file.
     """
-    print('>> L3 filter running...')
+    
     l2_input_file = f"intermediate/data_{date_range}_L2filter.parquet"
     l3_iv_only_output_file = f"intermediate/data_{date_range}_L3filterIVonly.parquet"
     l3_output_file = f"intermediate/data_{date_range}_L3filter.parquet"
+    
+    return l2_input_file, l3_iv_only_output_file, l3_output_file
+
+
+def run_filter(_df, date_range, iv_only=False):
+    """
+    Run the L3 filter on option data.
+
+    Parameters:
+    - _df: Dummy argument (not used) - included to make this module work with Table B doit.
+    - date_range (tuple): A tuple containing the start and end dates of the date range.
+    - iv_only (bool, optional): If True, only run the IV filter. If False, run both the IV filter and the put-call filter. Default is False.
+
+    Returns:
+    - l3_filtered_options (list): A list of filtered option data.
+
+    """
+    print('>> L3 filter running...')
+    
+    if iv_only:
+        print(' >> Running IV filter only...')
+        l3_data_iv_only = IV_filter(_df, date_range=date_range)
+        l3_filtered_options = None
+    else:
+        l3_data_iv_only = IV_filter(_df, date_range=date_range)
+        l3_filtered_options = put_call_filter(_df, date_range=date_range)
+    
+    return l3_data_iv_only, l3_filtered_options
+
+
+
+def compare_to_optionmetrics(l2_data, l3_data_iv_only, l3_filtered_options, date_range):
+    """
+    Compare the data from different levels of filtering to OptionMetrics data (1996 - 2012 only).
+
+    Parameters:
+    - l2_data (DataFrame): Level 2 data.
+    - l3_data_iv_only (DataFrame): Level 3 data after applying IV filter.
+    - l3_filtered_options (DataFrame): Level 3 data after applying Put-call parity filter.
+    - date_range (str): Date range for the comparison.
+
+    Returns:
+    - final_result_compare (DataFrame): Comparison results.
+
+    """
+    final_result_compare = build_check_results()
+    final_result_compare.loc[('Level 3 filters', 'IV filter'), 'Deleted'] = len(l2_data)-len(l3_data_iv_only)  
+    # final result
+    final_result_compare.loc[('Level 3 filters', 'Put-call parity filter'), 'Deleted'] = len(l3_data_iv_only)-len(l3_filtered_options)
+    final_result_compare.loc[('Level 3 filters', 'All'), 'Remaining'] = len(l3_filtered_options)    
+    final_result_compare = pd.merge(final_result_compare, build_check_results(), left_index=True, right_index=True, suffixes=(f' - Implemented_{date_range.replace("-01", "").replace("-02", "").replace("-12","")}', ' - OptionMetrics_1996-2012'))
+    final_result_compare.to_parquet(OUTPUT_DIR / f'L3_{date_range}_Final_vs_OptionMetrics.parquet')
+    final_result_compare.to_latex(OUTPUT_DIR / f'L3_{date_range}_Final_vs_OptionMetrics.tex')
+    print(' |-- Comparison to OptionMetrics complete, files saved.')
+    
+    return final_result_compare
+
+
+def IV_filter(_df, date_range):
+    """
+    Apply IV filter to the option data.
+
+    Parameters:
+    - _df: Placeholder parameter, not used in the function.
+    - date_range (str): Date range for filtering the option data.
+
+    Returns:
+    - l3_data_iv_only (DataFrame): IV-filtered option data.
+
+    """
+    print(' \n>> Running IV filter...')
+    
+    l2_input_file, l3_iv_only_output_file, _ = get_filepaths(date_range)
     
     # build IV filter for L2 data
     # read in L2 filtered data
     l2_data = pd.read_parquet(DATA_DIR / l2_input_file, columns=['secid', 'date', 'exdate', 'cp_flag', 'mnyns', 'impl_volatility', 'tb_m3', 'best_bid', 'best_offer', 'strike_price', 'contract_size', 'sec_price'])
     # calc log IV 
     l2_data['log_iv'] = np.log(l2_data['impl_volatility'])
-    print(' |-- L2 data loaded, building initial L2 chart...')
+    
+    print(' |-- IV filter: L2 data loaded, building pre-L3 filter charts...')
     build_l2_data_chart(l2_data, date_range)
     nan_iv_summary = nan_iv_in_l2_data(l2_data, date_range)
-    nan_iv_summary.to_latex(OUTPUT_DIR / f'post_L2_nan_iv_summary_{date_range}.tex')
+    nan_iv_summary.to_latex(OUTPUT_DIR / f'L3_{date_range}_nan_ivs_in_L2_data.tex')
+    
     print(' |-- IV filter: applying quadratic fit...')
     l2_data = apply_quadratic_iv_fit(l2_data)
+    
     print(' |-- IV filter: building fitted IV charts...')
     build_l2_fitted_iv_chart(l2_data, date_range)
     
@@ -582,71 +762,85 @@ def run_filter(date_range, iv_only=False):
     l3_data_iv_only = iv_filter_outliers(l2_data, 'percent', 2.0)
     # convert mnyns_bin to string to save
     l3_data_iv_only['mnyns_bin'] = l3_data_iv_only['mnyns_bin'].astype(str)
+    
     print(' |-- IV filter: saving L3 IV-filtered data...')
     l3_data_iv_only.to_parquet(DATA_DIR / l3_iv_only_output_file)
-    l3_data_iv_only.to_latex(OUTPUT_DIR / l3_iv_only_output_file.replace('.parquet', '.tex').replace('intermediate/', ''))
+    
     print(' |-- IV filter: building L3 IV-filtered charts...')
     build_l3_data_iv_only_chart(l3_data_iv_only, date_range)
-    print(' |-- IV filter complete.')
-    if iv_only:
-        # convenience return to work with IV_filter call
-        return l3_data_iv_only
-    else:
-        # dataframe format for final result
-        final_result = build_check_results().copy(deep=True)
-        final_result.loc[('Level 3 filters', 'IV filter'), 'Deleted'] = len(l2_data)-len(l3_data_iv_only)  
-        # build PCP filter for L3 data
-        l3_data = l3_data_iv_only.copy(deep=True)
-        
-        # calculate bid-ask midpoint
-        print(' |-- PCP filter: calculating bid-ask midpoint...')
-        l3_data['mid_price'] = (l3_data['best_bid'] + l3_data['best_offer']) / 2
-        # extract all the call options
-        call_options = l3_data.xs('C', level='cp_flag')
-        # extract all the put options
-        put_options = l3_data.xs('P', level='cp_flag')
-        
-        print(' |-- PCP filter: building put-call pairs...')
-        matching_calls, matching_puts = build_put_call_pairs(call_options.reset_index(drop=True), put_options.reset_index(drop=True))
-        # match the puts and calls
-        matched_options = pd.merge(matching_calls, matching_puts, on=['date', 'exdate', 'mnyns'], suffixes=('_C', '_P'))
-        
-        # calculate the PCP implied interest rate 
-        print(' |-- PCP filter: calculating PCP implied interest rate...')
-        matched_options = calc_implied_interest_rate(matched_options)
-        matched_options[matched_options['tb_m3_C'].eq(matched_options['tb_m3_P']) == False][['tb_m3_C', 'tb_m3_P']].isna().sum()
-
-        
-        # Calculate the daily median implied interest rate from the T-Bill data (same for calls and puts on a given day)
-        daily_median_int_rate = matched_options.groupby('date')['tb_m3_C'].median().reset_index(name='daily_median_rate')
-        matched_options = matched_options.join(daily_median_int_rate.set_index('date'), on='date')
-        
-        print(' |-- PCP filter: filtering outliers...')
-        l3_filtered_options = pcp_filter_outliers(matched_options, 'percent', 2.0)
-        # build chart
-        print(' |-- PCP filter: building L3 final filtered chart...')
-        build_l3_data_iv_pcp_chart(l3_filtered_options, date_range)
-        
-        # final result
-        final_result.loc[('Level 3 filters', 'Put-call parity filter'), 'Deleted'] = len(l3_data_iv_only)-len(l3_filtered_options)
-        final_result.loc[('Level 3 filters', 'All'), 'Remaining'] = len(l3_filtered_options)    
-        l3_filter_final_result = pd.merge(final_result, build_check_results(), left_index=True, right_index=True, suffixes=(' - Implemented', ' - OptionMetrics'))# .style.format('{:,.0f}')
-        
-        print(' |-- PCP filter complete.')
-        # save to parquet and latex
-        l3_filter_final_result.to_parquet(DATA_DIR / l3_output_file)
-        l3_filter_final_result.to_latex(OUTPUT_DIR / l3_output_file.replace('.parquet', '.tex').replace('intermediate/', ''))
-
-        return l3_filter_final_result
+    print(' |-- IV filter complete.')    
+    
+    # compare to optionmetrics
+    global final_result_compare
+    final_result_compare = partial(compare_to_optionmetrics, l2_data=l2_data, l3_data_iv_only=l3_data_iv_only, date_range=date_range)
+    
+    return l3_data_iv_only
 
 
-def IV_filter(df, date_range):
-    return run_filter(date_range, iv_only=True)
+def put_call_filter(_df, date_range): 
+    """
+    Filters option data using the put-call parity filter.
 
-def put_call_filter(df, date_range): 
-    return run_filter(date_range, iv_only=False)
+    Args:
+        _df: Placeholder parameter, not used in the function.
+        date_range (str): The date range for which the option data is filtered.
+
+    Returns:
+        DataFrame: The final filtered result after applying the put-call parity filter.
+    """
+    
+    print(' \n>> Running PCP filter...')
+    
+    _, l3_iv_only_output_file, l3_output_file = get_filepaths(date_range)
+    
+    try:
+        l3_data_iv_only = pd.read_parquet(DATA_DIR / l3_iv_only_output_file)    
+        print(' |-- PCP filter: L3 data (IV filter only) loaded...')
+    except FileNotFoundError:
+        raise FileNotFoundError(f"File {l3_iv_only_output_file} not found. Please run the IV filter first.")
+    
+    # calculate bid-ask midpoint
+    print(' |-- PCP filter: calculating bid-ask midpoint...')
+    l3_data_iv_only['mid_price'] = (l3_data_iv_only['best_bid'] + l3_data_iv_only['best_offer']) / 2
+    # extract all the call options
+    call_options = l3_data_iv_only.xs('C', level='cp_flag')
+    # extract all the put options
+    put_options = l3_data_iv_only.xs('P', level='cp_flag')
+    
+    print(' |-- PCP filter: building put-call pairs...')
+    matching_calls, matching_puts = build_put_call_pairs(call_options.reset_index(drop=True), put_options.reset_index(drop=True))
+    # match the puts and calls
+    matched_options = pd.merge(matching_calls, matching_puts, on=['date', 'exdate', 'mnyns'], suffixes=('_C', '_P'))
+    
+    # calculate the PCP implied interest rate 
+    print(' |-- PCP filter: calculating PCP implied interest rate...')
+    matched_options = calc_implied_interest_rate(matched_options)
+    matched_options[matched_options['tb_m3_C'].eq(matched_options['tb_m3_P']) == False][['tb_m3_C', 'tb_m3_P']].isna().sum()
+    
+    # Calculate the daily median implied interest rate from the T-Bill data (same for calls and puts on a given day)
+    daily_median_int_rate = matched_options.groupby('date')['tb_m3_C'].median().reset_index(name='daily_median_rate')
+    matched_options = matched_options.join(daily_median_int_rate.set_index('date'), on='date')
+    
+    print(' |-- PCP filter: filtering outliers...')
+    l3_filtered_options = pcp_filter_outliers(matched_options, 'percent', 2.0)
+    
+    print(' |-- PCP filter: saving L3 IV- and PCP-filtered data...')
+    # save to parquet and latex
+    l3_filtered_options.to_parquet(DATA_DIR / l3_output_file)
+    # l3_filtered_options.to_latex(OUTPUT_DIR / l3_output_file.replace('.parquet', '.tex').replace('intermediate/', ''))
+    
+    # build chart
+    print(' |-- PCP filter: building L3 final filtered options chart...')
+    build_l3_data_iv_pcp_chart(l3_filtered_options, date_range)
+    print(' |-- PCP filter complete.')
+    
+    # compare to optionmetrics
+    global final_result_compare
+    final_result_compare = final_result_compare(l3_filtered_options=l3_filtered_options)
+
+    return l3_filtered_options
 
 
 if __name__ == "__main__": 
     date_range = f'{START_DATE_01[:7]}_{END_DATE_01[:7]}'
-    df = run_filter(date_range=date_range, iv_only=False)
+    df = run_filter(_df=None, date_range=date_range, iv_only=False)
