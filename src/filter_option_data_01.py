@@ -116,7 +116,7 @@ def delete_zero_volume_filter(df):
 	""" Helper function to delete options with zero volume from the dataframe
 		We do not implement this filter in the current version of the code
 	"""
-	#df = df[df['volume'] != 0.0]
+	df = df[df['volume'] != 0.0]
 	#df = df[df['open_interest'] != 0.0]
 	return df 
 
