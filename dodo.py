@@ -253,6 +253,7 @@ def task_create_Table2():
 def task_compile_latex_docs():
     """Example plots"""
     file_dep = [
+        "./reports/final_report.tex",
     	"./src/create_table_B1_.py",
     	"./src/create_table_2_.py", 
     	"./output/tableB1.tex",
@@ -267,10 +268,10 @@ def task_compile_latex_docs():
     return {
         "actions": [
 
-            "latexmk -xelatex -cd ./reports/sample_table.tex",  # Compile
-            "latexmk -xelatex -c -cd ./reports/sample_table.tex",  # Clean
-            # "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
-            # "latexmk -xelatex -c -cd ./reports/final_report.tex",   # Clean
+            # "latexmk -xelatex -cd ./reports/sample_table.tex",  # Compile
+            # "latexmk -xelatex -c -cd ./reports/sample_table.tex",  # Clean
+            "latexmk -xelatex -cd ./reports/final_report.tex",  # Compile
+            "latexmk -xelatex -c -cd ./reports/final_report.tex",   # Clean
         ],
         "targets": targets,
         "file_dep": file_dep,
