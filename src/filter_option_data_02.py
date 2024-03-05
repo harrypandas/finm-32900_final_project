@@ -4,11 +4,9 @@ from datetime import datetime,timedelta
 import bsm_pricer as bsm
 import load_option_data_01 as l1
 import filter_option_data_01 as f1
+import filter_option_data_03 as f3
 from pathlib import Path
 import config
-
-
-import filter_option_data_03 as f3
 
 DATA_DIR = Path(config.DATA_DIR)
 
@@ -66,7 +64,6 @@ def filter_implied_interest_rate(optm_l2_mny):
     """Implied Interest Rate <0% Filter: Filter options based on implied interest rate.
        Implied interest rate field must be defined before running this function.
     """
-    
     optm_l2_mny['mid_price'] = (optm_l2_mny['best_bid'] + optm_l2_mny['best_offer']) / 2
 
     call_options = optm_l2_mny.loc[optm_l2_mny['cp_flag'] == 'C'].reset_index(drop=True)
@@ -82,10 +79,13 @@ def filter_implied_interest_rate(optm_l2_mny):
     matched_options = f3.calc_implied_interest_rate(matched_options)
     
     neg_int = matched_options.loc[matched_options['pc_parity_int_rate'] < 0][['date', 'exdate', 'strike_price', 'sec_price']].drop_duplicates()
+
     optm_l2_int = pd.merge(optm_l2_mny, neg_int, on=['date', 'exdate', 'strike_price', 'sec_price'], how='outer', indicator=True)
     optm_l2_int = optm_l2_int.loc[optm_l2_int['_merge'] == 'left_only'].drop(columns='_merge')  
+
     med_impl_int = matched_options.loc[(matched_options['mnyns_C']>=0.95) & (matched_options['mnyns_C']<=1.05)].groupby(['time_to_maturity_C'])['pc_parity_int_rate'].median().reset_index()
     med_impl_int = med_impl_int.loc[med_impl_int['pc_parity_int_rate']>=0]
+
     optm_l2_int = pd.merge(optm_l2_int, med_impl_int, left_on='time_to_maturity', right_on='time_to_maturity_C', how='left', indicator=True)
     optm_l2_int['pc_parity_int_rate'] = optm_l2_int['pc_parity_int_rate'].ffill()
     
@@ -95,7 +95,6 @@ def filter_implied_interest_rate(optm_l2_mny):
 def filter_unable_compute_iv(df):
     """Unable to Compute IV Filter: Filter options where implied volatility cannot be computed.
     """
-
     df = df.loc[df['impl_volatility'].notna()]
     return df
 
