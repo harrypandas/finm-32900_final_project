@@ -71,7 +71,7 @@ def appendixBfilter(start=START_DATE_01, end=END_DATE_01):
 	lv1OneSteps = ['Identical', 'Identical except price', 
 		'Bid = 0', 'Volume = 0'] 
 	lvlOneFilters = [f1.delete_identical_filter, f1.delete_identical_but_price_filter, 
-		f1.delete_zero_bid_filter]
+		f1.delete_zero_bid_filter, f1.keep_volume]
 	# lvlOneFilters = [f1.delete_identical_filter, f1.delete_identical_but_price_filter, 
 	# 	f1.delete_zero_bid_filter, f1.delete_zero_volume_filter]
 
