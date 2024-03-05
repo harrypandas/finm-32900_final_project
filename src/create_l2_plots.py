@@ -11,11 +11,6 @@ END_DATE_01 = config.END_DATE_01
 START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
 
-date_range = f'{START_DATE_01[:7]}_{END_DATE_01[:7]}'
-
-# load data with level 1 filters applied
-# optm_l1_df = pd.read_parquet(DATA_DIR / "intermediate" / "data_1996-01_2012-01_L1filter.parquet")
-
 def build_l2_days_to_mat_plot(optm_l1_df, date_range):
     """Build plot for days to maturity filter
        Save plot to file L2_date_fig1_L2filter.png
@@ -118,23 +113,36 @@ if __name__ == "__main__":
     date_ranges = [f'{START_DATE_01[:7]}_{END_DATE_01[:7]}',
                     f'{START_DATE_02[:7]}_{END_DATE_02[:7]}']
     
+    print("Creating Level 2 plots...")
     for date_range in date_ranges:
         # load data with level 1 filters applied
         optm_l1_df = pd.read_parquet(DATA_DIR / "intermediate" / f"data_{date_range}_L1filter.parquet")
         
         optm_l2_df = f2.filter_time_to_maturity(optm_l1_df)
+
+        print("Building Level 2 - Figure 1...")
         # build plot for days to maturity filter
         build_l2_days_to_mat_plot(optm_l1_df, date_range)
+
+        print("Building Level 2 - Figure 2...")
         # build plot for implied volatility vs time to maturity
         build_l2_iv_tmm_plot(optm_l1_df, optm_l2_df, date_range)
 
         optm_l2_iv = f2.filter_iv(optm_l2_df)
+
+        print("Building Level 2 - Figure 3...")
         # build plot for implied volatility distribution
         build_l2_iv_dist_plot(optm_l2_df, optm_l2_iv, date_range)
 
         optm_l2_mny = f2.filter_moneyness(optm_l2_iv)
+
+        print("Building Level 2 - Figure 4...")
+        # build plot for moneyness vs volume
         build_l2_mny_plot(optm_l2_iv, optm_l2_mny, date_range)
 
         optm_l2_int = f2.filter_implied_interest_rate(optm_l2_mny)
         optm_l2_univ = f2.filter_unable_compute_iv(optm_l2_int)
+
+        print("Building Level 2 - Figure 5...")
+        # build plot for implied volatility unable to compute
         build_l2_nocomp_iv_plot(optm_l2_int, optm_l2_univ, date_range)

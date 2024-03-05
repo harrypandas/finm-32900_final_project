@@ -169,8 +169,36 @@ def task_filter_appendix_B():
     }
     return actdict
 
+# def task_create_L2_plots():
+#     """Plots for Level 2 filter steps
+#     """
+#     file_dep = ["./src/create_l2_plots.py",
+#                 "./src/filter_option_data_02.py",
+#                 DATA_DIR / "intermediate" / f"data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L1filter.parquet",
+#                 DATA_DIR / "intermediate" / f"data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L1filter.parquet"]
+    
+#     file_output = [f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig1.png",
+#                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig2.png",
+#                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3.png",
+#                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig4.png",
+#                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig5.png",
+#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig1.png",
+#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig2.png",
+#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3.png",
+#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig4.png",
+#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig5.png"]
+    
+#     targets = [OUTPUT_DIR / file for file in file_output]
 
-
+#     actdict = {
+#                     "actions": [
+#                         "ipython ./src/create_l2_plots.py",
+#                     ],
+#                     "targets": targets,
+#                     "file_dep": file_dep,
+#                     "clean": True,
+#                 }
+#     return actdict 
 
 def task_create_TableB1(): 
 
