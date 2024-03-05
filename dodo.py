@@ -14,7 +14,6 @@ import shutil
 
 from load_option_data_01 import run_load_all_optm_data 
 
-
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 WRDS_USERNAME = config.WRDS_USERNAME
@@ -24,6 +23,8 @@ END_DATE_01 = config.END_DATE_01
 
 START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
+
+
 
 # fmt: off
 ## Helper functions for automatic execution of Jupyter notebooks
@@ -67,6 +68,9 @@ def task_run_config():
     'clean': True,
     }
     return actdict
+
+
+
 
 # def task_create_latexVar(): 
 #     file_dep = [
@@ -314,6 +318,26 @@ def task_compile_latex_docs():
     	"./output/tableB1.tex",
         "./output/table2.tex",
     ]
+
+
+    file_dep2 = [f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig1.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig2.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig4.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig5.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig1.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig2.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig4.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig5.png",
+
+
+                   ]
+    
+    dep2 = [OUTPUT_DIR / file for file in file_dep2]
+
+    file_dep = file_dep + dep2
+    
     file_output = [
         "./reports/final_report.pdf",
        # "./reports/slides_example.pdf",
