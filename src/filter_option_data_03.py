@@ -774,7 +774,7 @@ def IV_filter(_df, date_range):
     
     # build IV filter for L2 data
     # read in L2 filtered data
-    l2_data = pd.read_parquet(DATA_DIR / l2_input_file, columns=['secid', 'date', 'exdate', 'cp_flag', 'mnyns', 'impl_volatility', 'tb_m3', 'best_bid', 'best_offer', 'strike_price', 'contract_size', 'sec_price'])
+    l2_data = pd.read_parquet(DATA_DIR / l2_input_file, columns=['secid', 'date', 'exdate', 'cp_flag', 'mnyns', 'impl_volatility', 'tb_m3', 'best_bid', 'best_offer', 'strike_price', 'contract_size', 'sec_price', 'volume', 'open_interest'])
     # calc log IV 
     l2_data['log_iv'] = np.log(l2_data['impl_volatility'])
     
