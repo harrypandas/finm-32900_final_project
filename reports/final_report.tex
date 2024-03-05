@@ -52,7 +52,7 @@ Viren Desai, Harrison Holt, Ian Hammock
 
 \doublespacing
 \begin{abstract}
-In this article we will summarize our efforts to replicate the filtering described in appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. We provide additional insight on how these filters shape the distribution on implied volatility and moneyness. Moreover, due to the unavailability of index option data from 1985 to 1995, we focus our comparison on the dataset of \STARTONE\  to \ENDONE\ as well as extending this analysis forward from \STARTTWO\  to \ENDTWO. Our analysis can be readily found on our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.  
+In this article we will summarize our efforts to replicate the filtering described in Appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. We provide additional insight on how these filters shape the distribution on implied volatility and moneyness. Moreover, due to the unavailability of index option data from 1985 to 1995, we focus our comparison on the dataset of \STARTONE\  to \ENDONE\ as well as extending this analysis forward from \STARTTWO\  to \ENDTWO. Our analysis can be readily found on our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.  
 
 
 \end{abstract}
@@ -66,8 +66,7 @@ In this article we will summarize our efforts to replicate the filtering describ
 \pagenumbering{arabic}
 \section{Replicating Table B1}
 
-In the appendix B of \citet{constantinides2013}, three levels of filters are described with the intent to minimize quoting errors in the construction of their portfolios. In this section we will summarize our implementation and briefly discuss the differences. Our results are summarized in \autoref{table:tableB1}. Furthe discussion relating to the distribution of implied volatility and moneyness through the level three filter can be found in the \autoref{app:lvl3}.
-
+In the Appendix B of \citet{constantinides2013}, three levels of filters are described with the intent to minimize quoting errors in the construction of their portfolios. In this section we will summarize our implementation and briefly discuss the differences. Our results are summarized in \autoref{table:tableB1}. 
 \subsection{Level 1} 
 Two issues arose when applying this set of filters. Firstly, there are quite a few options in the "Identical but Price" filter that have no implied volatility. This will be taken care in level two, but knowledge of the implied volatility is required to select the option's price that has volatility closest to the "at the money" volatility. This is limited to about 5 in the 1996-2012 dataset, and most of these options will fall out in the level 2 filters (days to expiration <7 or out of the money. In the 2012 to 2019 dataset we have observed around 355,896 options with no implied volatility. For the purpose of this filter, if an implied volatility is not given it will not be choosen as the option with volatility closest to the at the money,as we will be unable to calculate it and it will fall out in level 2. Additionally, if an option family's "at the money" member cannot have their implied volatilitiy calculated all options will be inevitably dropped due to the "Unable to compute IV" filter. 
 
@@ -76,7 +75,42 @@ Secondly, an unexplainable difference occurs upon the application of the Volume 
 
 \subsection {Level 2}
 
+appendix: \autoref{app:lvl2}
+
+\subsection{\STARTONE\ to \ENDONE }
+figure tags: 
+\autoref{fig:time1lvl2fig1}
+\autoref{fig:time1lvl2fig2}
+\autoref{fig:time1lvl2fig3}
+\autoref{fig:time1lvl2fig4}
+\autoref{fig:time1lvl2fig5}
+
+\subsection{\STARTTWO\ to \ENDTWO }
+figure tags: 
+\autoref{fig:time2lvl2fig1}
+\autoref{fig:time2lvl2fig2}
+\autoref{fig:time2lvl2fig3}
+\autoref{fig:time2lvl2fig4}
+\autoref{fig:time2lvl2fig5}
+
+
 \subsection{Level 3} 
+
+appendix: \autoref{app:lvl3}
+
+
+\subsection{\STARTONE\ to \ENDONE }
+figure tags: 
+\autoref{fig:time1lvl3fig1}
+\autoref{fig:time1lvl3fig2}
+\autoref{fig:time1lvl3fig3}
+\autoref{fig:time1lvl3fig4}
+\subsection{\STARTTWO\ to \ENDTWO }
+figure tags: 
+\autoref{fig:time2lvl3fig1}
+\autoref{fig:time2lvl3fig2}
+\autoref{fig:time2lvl3fig3}
+\autoref{fig:time2lvl3fig4}
 
 \newpage 
 
@@ -143,20 +177,10 @@ We would like to note an interesting aspect of this dataset. Over 80\% of the op
 
 
 
-\section{Data}
 
-Our option data is queried from OptionMetrics provided by Wharton Research Data Services (WRDS). We limit the query to SECID = 108105, S\&P 500 Index - SPX. We use the three month Tbill as our interest rate, this is from the Federal Reserve Board's H15 report supplied by WRDS. 
+\section{Conclusion} 
 
-In comparison to their data, we have pulled 184 more options than them. It is unclear where the discrepancy lies. We assumed we were off by a day however this will truncate or elongate the dataset by over 300 points. We credit the discrepancy to OptionMetrics updating their data to be more accurate. 
-
-The following links contain the documentation and helpful links for the WRDS database: 
-\begin{itemize}
-\item \href{https://wrds-www.wharton.upenn.edu/pages/support/manuals-and-overviews/optionmetrics/wrds-overview-optionmetrics/}{Option Metrics Overview} 
-\item \href{https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/opprcd2023/ }{Option Metric Keys}
-\item \href{https://wrds-www.wharton.upenn.edu/pages/get-data/optionmetrics/ivy-db-us/options/option-prices/}{Option Metrics Query} 
-\item \href{https://wrds-www.wharton.upenn.edu/data-dictionary/frb_all/rates_daily/}{Federal Reserve Report} 
-\end{itemize}
-
+Our findings illustrate that seemingly straight forward instructions for filtering data may lead to divergent results. To reduce these errors, we suggest that journals require computationally intense manuscripts, such as \citet{constantinides2013}, publish their code base along with their findings. Our data acquisition is briefly described in \autoref{app:data}, and our code base can be found our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.
 
 
 
@@ -173,6 +197,141 @@ The following links contain the documentation and helpful links for the WRDS dat
 \begin{appendix}
 
 
+\section{Data}\label{app:data}
+
+Our option data is queried from OptionMetrics provided by Wharton Research Data Services (WRDS). We limit the query to SECID = 108105, S\&P 500 Index - SPX. We use the three month Tbill as our interest rate, this is from the Federal Reserve Board's H15 report supplied by WRDS. 
+
+In comparison to their data, we have pulled 184 more options than them. It is unclear where the discrepancy lies. We assumed we were off by a day however this will truncate or elongate the dataset by over 300 points. We credit the discrepancy to OptionMetrics updating their data to be more accurate. 
+
+The following links contain the documentation and helpful links for the WRDS database: 
+\begin{itemize}
+\item \href{https://wrds-www.wharton.upenn.edu/pages/support/manuals-and-overviews/optionmetrics/wrds-overview-optionmetrics/}{Option Metrics Overview} 
+\item \href{https://wrds-www.wharton.upenn.edu/data-dictionary/optionm_all/opprcd2023/ }{Option Metric Keys}
+\item \href{https://wrds-www.wharton.upenn.edu/pages/get-data/optionmetrics/ivy-db-us/options/option-prices/}{Option Metrics Query} 
+\item \href{https://wrds-www.wharton.upenn.edu/data-dictionary/frb_all/rates_daily/}{Federal Reserve Report} 
+\end{itemize}
+
+
+\newpage
+\section{Level Two Filter}\label{app:lvl2}
+\subsection{\STARTONE\ to \ENDONE }
+
+\subsubsection{Effects of filtering Days to Maturity <7 or >180}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+%\captionsetup{font={normalsize,bf}}
+% \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig1.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{Distribution of time to maturity, measured in years from option initial date to expiration date. The graph on the left shows the distribution prior to applying the initial level 2 filter of excluding days to maturity less than 7 and greater than 180. Right shows distribution post filter.}
+\label{fig:time1lvl2fig1}
+\end{figure}
+
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+%\captionsetup{font={normalsize,bf}}
+% \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig2.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{As noted in the paper, the short maturity options tend to move erratically nearing expiration. In Figure 2, post-filter (red) we see a slight reduction of short-term options with a high implied volatility.}
+\label{fig:time1lvl2fig2}
+\end{figure}
+
+\subsubsection{Effects of filtering IV <5\% or >100\%}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+\captionsetup{font={normalsize,bf}}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig3.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{Removing option quotes with implied volatilities lower than 5\% or higher than 100\% eliminates extreme values and reduces the skewness of the implied volatility distribution.}
+\label{fig:time1lvl2fig3}
+\end{figure}
+
+
+\subsubsection{Effects of filtering on Moneyness <0.8 or >1.2}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+\captionsetup{font={normalsize,bf}}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig4.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{Removing option quotes with moneyness lower than 0.8 and higher than 1.2 eliminates extreme values. These extreme values potentially have quotation problems or low values.}
+  \label{fig:time1lvl2fig4}
+\end{figure}
+
+
+\subsubsection{Effects of filtering out options where we could not compute IV}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+\captionsetup{font={normalsize,bf}}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig5.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{Through our analysis we found there are cases where we could not compute implied volatility (IV), as a result, the values were NaN. In figure above, there is a clear trend where the percentage of incomputable IVs increase as time to maturity decreases.}
+ \label{fig:time1lvl2fig5}
+\end{figure}
+
+
+
+
+\newpage
+\subsection{\STARTTWO\ to \ENDTWO }
+
+\subsubsection{Effects of filtering Days to Maturity <7 or >180}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+%\captionsetup{font={normalsize,bf}}
+% \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig1.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{Distribution of time to maturity, measured in years from option initial date to expiration date. The graph on the left shows the distribution prior to applying the initial level 2 filter of excluding days to maturity less than 7 and greater than 180. Right shows distribution post filter.}
+\label{fig:time2lvl2fig1}
+\end{figure}
+
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+%\captionsetup{font={normalsize,bf}}
+% \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig2.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{As noted in the paper, the short maturity options tend to move erratically nearing expiration. In Figure 2, post-filter (red) we see a slight reduction of short-term options with a high implied volatility.}
+\label{fig:time2lvl2fig2}
+\end{figure}
+
+\subsubsection{Effects of filtering IV <5\% or >100\%}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+\captionsetup{font={normalsize,bf}}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig3.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{Removing option quotes with implied volatilities lower than 5\% or higher than 100\% eliminates extreme values and reduces the skewness of the implied volatility distribution.}
+\label{fig:time2lvl2fig3}
+\end{figure}
+
+
+\subsubsection{Effects of filtering on Moneyness <0.8 or >1.2}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+\captionsetup{font={normalsize,bf}}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig4.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{Removing option quotes with moneyness lower than 0.8 and higher than 1.2 eliminates extreme values. These extreme values potentially have quotation problems or low values.}
+  \label{fig:time2lvl2fig4}
+\end{figure}
+
+
+\subsubsection{Effects of filtering out options where we could not compute IV}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+\captionsetup{font={normalsize,bf}}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig5.png}%{\PathToOutput/pdf_temp.pdf}
+\captionsetup{font=normalfont}
+  \caption{Through our analysis we found there are cases where we could not compute implied volatility (IV), as a result, the values were NaN. In figure above, there is a clear trend where the percentage of incomputable IVs increase as time to maturity decreases.}
+ \label{fig:time2lvl2fig5}
+\end{figure}
+
+
+
+
+\newpage
 \section{Level Three Filter}\label{app:lvl3}
 \subsection{\STARTONE\ to \ENDONE }
 
@@ -180,7 +339,7 @@ The following links contain the documentation and helpful links for the WRDS dat
   \centering
   \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig1_post_L2filter.png}%{\PathToOutput/pdf_temp.pdf}
   \caption{Your caption here}
-  \label{fig:your_label}
+ \label{fig:time1lvl3fig1}
 \end{figure}
 
 
@@ -188,7 +347,7 @@ The following links contain the documentation and helpful links for the WRDS dat
   \centering
   \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig2_L2fitted_iv.png}%{\PathToOutput/pdf_temp.pdf}
   \caption{Your caption here}
-  \label{fig:your_label}
+  \label{fig:time1lvl3fig2}
 \end{figure}
 
 
@@ -196,7 +355,7 @@ The following links contain the documentation and helpful links for the WRDS dat
   \centering
   \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig3_IV_filter_only.png}%{\PathToOutput/pdf_temp.pdf}
   \caption{Your caption here}
-  \label{fig:your_label}
+ \label{fig:time1lvl3fig3}
 \end{figure}
 
 
@@ -204,7 +363,7 @@ The following links contain the documentation and helpful links for the WRDS dat
   \centering
   \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig4_IV_and_PCP.png}%{\PathToOutput/pdf_temp.pdf}
   \caption{Your caption here}
-  \label{fig:your_label}
+ \label{fig:time1lvl3fig4}
 \end{figure}
 
 \newpage
@@ -214,7 +373,7 @@ The following links contain the documentation and helpful links for the WRDS dat
   \centering
   \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig1_post_L2filter.png}%{\PathToOutput/pdf_temp.pdf}
   \caption{Your caption here}
-  \label{fig:your_label}
+  \label{fig:time2lvl3fig1}
 \end{figure}
 
 
@@ -222,7 +381,7 @@ The following links contain the documentation and helpful links for the WRDS dat
   \centering
   \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig2_L2fitted_iv.png}%{\PathToOutput/pdf_temp.pdf}
   \caption{Your caption here}
-  \label{fig:your_label}
+  \label{fig:time2lvl3fig2}
 \end{figure}
 
 
@@ -230,7 +389,7 @@ The following links contain the documentation and helpful links for the WRDS dat
   \centering
   \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig3_IV_filter_only.png}%{\PathToOutput/pdf_temp.pdf}
   \caption{Your caption here}
-  \label{fig:your_label}
+  \label{fig:time2lvl3fig3}
 \end{figure}
 
 
@@ -238,7 +397,7 @@ The following links contain the documentation and helpful links for the WRDS dat
   \centering
   \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig4_IV_and_PCP.png}%{\PathToOutput/pdf_temp.pdf}
   \caption{Your caption here}
-  \label{fig:your_label}
+  \label{fig:time2lvl3fig4}
 \end{figure}
 
 \newpage
