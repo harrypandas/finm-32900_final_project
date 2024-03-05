@@ -14,7 +14,6 @@ import shutil
 
 from load_option_data_01 import run_load_all_optm_data 
 
-
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
 WRDS_USERNAME = config.WRDS_USERNAME
@@ -24,6 +23,8 @@ END_DATE_01 = config.END_DATE_01
 
 START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
+
+
 
 # fmt: off
 ## Helper functions for automatic execution of Jupyter notebooks
@@ -53,13 +54,44 @@ if not os.path.exists(env_file):
 
 
 def task_run_config(): 
+    file_output = [
+        "latexVar.tex",
+        ]
+    targets = [OUTPUT_DIR / file for file in file_output]
+
     actdict = {
     'actions': [
-    "ipython ./src/config.py"
+    "ipython ./src/config.py",
+    "ipython ./src/create_latex_variables.py"
     ], 
+    "targets": targets,
     'clean': True,
     }
     return actdict
+
+
+
+
+# def task_create_latexVar(): 
+#     file_dep = [
+#     "./src/create_latex_variables.py", 
+#     ]
+#     file_output = [
+#         "latexVar.tex",
+#         ]
+#     targets = [OUTPUT_DIR / file for file in file_output]
+
+#     actdict = {
+#     'actions': [
+#     "ipython ./src/create_latex_variables.py"
+#     ], 
+#     "targets": targets,
+#     "file_dep": file_dep,
+#     'clean': True,
+#     "verbosity": 2,
+#     }
+#     return actdict
+
 
 # def task_load_and_save_data(): 
 
@@ -169,36 +201,63 @@ def task_filter_appendix_B():
     }
     return actdict
 
-# def task_create_L2_plots():
-#     """Plots for Level 2 filter steps
-#     """
-#     file_dep = ["./src/create_l2_plots.py",
-#                 "./src/filter_option_data_02.py",
-#                 DATA_DIR / "intermediate" / f"data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L1filter.parquet",
-#                 DATA_DIR / "intermediate" / f"data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L1filter.parquet"]
+def task_create_L2_plots():
+    """Plots for Level 2 filter steps
+    """
+    file_dep = ["./src/create_l2_plots.py",
+                "./src/filter_option_data_02.py",
+                DATA_DIR / "intermediate" / f"data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L1filter.parquet",
+                DATA_DIR / "intermediate" / f"data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L1filter.parquet"]
     
-#     file_output = [f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig1.png",
-#                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig2.png",
-#                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3.png",
-#                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig4.png",
-#                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig5.png",
-#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig1.png",
-#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig2.png",
-#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3.png",
-#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig4.png",
-#                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig5.png"]
+    file_output = [f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig1.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig2.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig4.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig5.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig1.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig2.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig4.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig5.png"]
     
-#     targets = [OUTPUT_DIR / file for file in file_output]
+    targets = [OUTPUT_DIR / file for file in file_output]
 
-#     actdict = {
-#                     "actions": [
-#                         "ipython ./src/create_l2_plots.py",
-#                     ],
-#                     "targets": targets,
-#                     "file_dep": file_dep,
-#                     "clean": True,
-#                 }
-#     return actdict 
+    actdict = {
+                    "actions": [
+                        "ipython ./src/create_l2_plots.py",
+                    ],
+                    "targets": targets,
+                    "file_dep": file_dep,
+                    "clean": True,
+                }
+    return actdict 
+
+def task_create_L1_plots():
+    """Plots for Level 1 filter steps
+    """
+    file_dep = ["./src/create_l1_plots.py",
+                "./src/filter_option_data_01.py",
+                DATA_DIR / f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet", 
+                DATA_DIR / f"pulled/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
+                DATA_DIR / "intermediate" / f"data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
+                DATA_DIR / "intermediate" / f"data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L3filter.parquet",
+                ]
+    
+    file_output = [f"L1_noVol_noInt_{START_DATE_01[:7]}_{END_DATE_01[:7]}.tex",
+                    f"L1_noVol_noInt_{START_DATE_02[:7]}_{END_DATE_02[:7]}.tex",
+               ]
+    
+    targets = [OUTPUT_DIR / file for file in file_output]
+
+    actdict = {
+                    "actions": [
+                        "ipython ./src/create_l1_plots.py",
+                    ],
+                    "targets": targets,
+                    "file_dep": file_dep,
+                    "clean": True,
+                }
+    return actdict 
 
 def task_create_TableB1(): 
 
@@ -276,25 +335,7 @@ def task_create_Table2():
     }
     return actdict
 
-def task_create_latexVar(): 
-    file_dep = [
-    "./src/create_latex_variables.py", 
-    ]
-    file_output = [
-        "latexVar.tex",
-        ]
-    targets = [OUTPUT_DIR / file for file in file_output]
 
-    actdict = {
-    'actions': [
-    "ipython ./src/create_latex_variables.py"
-    ], 
-    "targets": targets,
-    "file_dep": file_dep,
-    'clean': True,
-    "verbosity": 2,
-    }
-    return actdict
 
 def task_compile_latex_docs():
     file_dep = [
@@ -304,6 +345,28 @@ def task_compile_latex_docs():
     	"./output/tableB1.tex",
         "./output/table2.tex",
     ]
+
+
+    file_dep2 = [f"L1_noVol_noInt_{START_DATE_01[:7]}_{END_DATE_01[:7]}.tex",
+                    f"L1_noVol_noInt_{START_DATE_02[:7]}_{END_DATE_02[:7]}.tex",
+                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig1.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig2.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig4.png",
+                   f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig5.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig1.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig2.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig4.png",
+                   f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig5.png",
+
+
+                   ]
+    
+    dep2 = [OUTPUT_DIR / file for file in file_dep2]
+
+    file_dep = file_dep + dep2
+    
     file_output = [
         "./reports/final_report.pdf",
        # "./reports/slides_example.pdf",

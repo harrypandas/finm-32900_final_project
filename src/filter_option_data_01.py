@@ -139,6 +139,19 @@ def delete_zero_volume_filter(df):
 	#df = df[df['open_interest'] != 0.0]
 	return df 
 
+def delete_open_interest_filter(df): 
+	""" Helper function to delete options with zero open interest from the dataframe
+		We do not implement this filter in the current version of the code
+	"""
+	df = df[df['open_interest'] != 0.0]
+	return df 
+
+def keep_volume(df):
+	""" Helper function to do nothing
+	
+	"""
+	return df
+
 def appendixBfilter_level1(df): 
 	""" Function to apply the filters from Appendix B of the paper
 	"""
