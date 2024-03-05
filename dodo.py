@@ -232,6 +232,33 @@ def task_create_L2_plots():
                 }
     return actdict 
 
+def task_create_L1_plots():
+    """Plots for Level 1 filter steps
+    """
+    file_dep = ["./src/create_l1_plots.py",
+                "./src/filter_option_data_01.py",
+                DATA_DIR / f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet", 
+                DATA_DIR / f"pulled/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
+                DATA_DIR / "intermediate" / f"data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
+                DATA_DIR / "intermediate" / f"data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L3filter.parquet",
+                ]
+    
+    file_output = [f"L1_noVol_noInt_{START_DATE_01[:7]}_{END_DATE_01[:7]}.tex",
+                    f"L1_noVol_noInt_{START_DATE_02[:7]}_{END_DATE_02[:7]}.tex",
+               ]
+    
+    targets = [OUTPUT_DIR / file for file in file_output]
+
+    actdict = {
+                    "actions": [
+                        "ipython ./src/create_l1_plots.py",
+                    ],
+                    "targets": targets,
+                    "file_dep": file_dep,
+                    "clean": True,
+                }
+    return actdict 
+
 def task_create_TableB1(): 
 
     #add file dep on data being made 
@@ -320,7 +347,9 @@ def task_compile_latex_docs():
     ]
 
 
-    file_dep2 = [f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig1.png",
+    file_dep2 = [f"L1_noVol_noInt_{START_DATE_01[:7]}_{END_DATE_01[:7]}.tex",
+                    f"L1_noVol_noInt_{START_DATE_02[:7]}_{END_DATE_02[:7]}.tex",
+                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig1.png",
                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig2.png",
                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3.png",
                    f"L2_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig4.png",
