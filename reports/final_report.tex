@@ -93,17 +93,7 @@ The Level 2 filters comprised of:
   \item \textit{Days to Maturity $<$7 or $>$180}: To filter out options with less than a week to expiration (due to erratic price behavior) or more than 180 days to expiration (due to low liquidity).
   \item \textit{IV $<$5\% or $>$100\%}: To filter out options with extreme IV values.
   \item \textit{Moneyness $<$0.8 or $>$1.2}: To filter out options with extreme moneyness values, due to these options having low liquidity and little value beyond the intrinsic value of the option.
-  \item \textit{Implied Interest Rate $<$0}: To filter out options with negative implied interest rates, which are likely due to quoting errors. To calculate the implied interest rate, we compute the put-call parity implied interest rate using each option pair's bid-ask midpoints as the price. The put-call parity implied interest rate is the interest rate that makes the put-call parity equation hold.
-
-\begin{equation}  
-  \begin{align}
-    C-P &= S-Ke^{rT} \\
-    e^{rT} &= \frac{(S-C+P)}{K} \\
-    r &= \frac{1}{T} \cdot \log\left(\frac{S-C+P}{K}\right)
-  \end{align}
-  \label{eq:pcpIntRate}
-\end{equation}
-
+  \item \textit{Implied Interest Rate $<$0}: To filter out options with negative implied interest rates, which are likely due to quoting errors. To calculate the implied interest rate, we compute the put-call parity implied interest rate using each option pair's bid-ask midpoints as the price. The put-call parity implied interest rate is the interest rate that makes the put-call parity equation hold.   
   \item \textit{Unable to compute IV}
 \end{itemize}
 
