@@ -52,7 +52,7 @@ Viren Desai, Harrison Holt, Ian Hammock
 
 \doublespacing
 \begin{abstract}
-In this article we will summarize our efforts to replicate the filtering described in Appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. We provide additional insight on how these filters shape the resultant distributions of implied volatility vs moneyness for a large cross-section of SPX calls and puts over two timeframes. Due to the unavailability of index option data from 1985 to 1995, we focus our comparison on the dataset of \STARTONE\  to \ENDONE\ as well as extending this analysis forward from \STARTTWO\  to \ENDTWO. Through a sequence of data visualizations, we show that while intricately constructed data filters may yield elegant results in one time period, these results do not necessarily port over to other time periods. Our analysis can be readily found on our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.  
+In this article we will summarize our efforts to replicate the filtering described in Appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. We provide additional insight on how these filters shape the resultant distributions of implied volatility vs moneyness for a large cross-section of SPX calls and puts over two timeframes. Due to the unavailability of index option data from 1985 to 1995, we focus our comparison on the dataset of \STARTONE\  to \ENDONE\ as well as extending this analysis forward from \STARTTWO\  to \ENDTWO. Through a sequence of data visualizations, we show that while intricately constructed data filters may yield elegant results in one time period, these results do not necessarily port over to other time periods. The implications for option pricing models based on such time-fragile data filters would be an interesting follow-up study. Our analysis can be readily found on our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.  
 
 
 \end{abstract}
@@ -96,9 +96,9 @@ figure tags:
 
 \subsection{Level 3} 
 
-The Level 3 filters described in the paper are not as straightforward as the previous two levels, and are comprised of an implied volatility filter (the "IV filter") and a put-call parity implied interest rate filter (the "put-call parity filter", or "PCP filter"). In particular, the intricate construction of these filters, and the lack of specific details regarding filter parameters in \citet{constantinides2013}, make the filtered option counts highly sensitive to changes in the filter parameters.
+The Level 3 filters described in the paper are not as straightforward as the previous two levels, and are comprised of an implied volatility filter (the "IV filter") and a put-call parity implied interest rate filter (the "put-call parity filter", or "PCP filter"). In particular, the intricate construction of these filters, and the lack of specific details regarding filter parameters in \citet{constantinides2013}, make the filtered option counts highly sensitive to changes in the filter parameters. Furthermore, since the IV filter and the PCP filter are applied sequentially, errors in replication get compounded downstream. 
 
-The objective of the IV filter is to reduce the prevalence of apparent butterfly arbitrage. A butterfly arbitrage occurs when there is a discrepancy in the IV structure across difference moneyness levels for options having the same expiration date. The construction of the IV filter involves fitting a quadratic polynomial to the observed log volatilities. 
+The objective of the IV filter is to reduce the prevalence of apparent butterfly arbitrage. A butterfly arbitrage occurs when there is a discrepancy in the IV structure across difference moneyness levels for options having the same expiration date. The construction of the IV filter involves fitting a quadratic polynomial to the observed log volatilities, and filtering out options whose implied volatilities 
 
 
 appendix: \autoref{app:lvl3}
@@ -269,7 +269,7 @@ The following links contain the documentation and helpful links for the WRDS dat
 \label{table:time2lvl1T1}
 \end{table}
 
-\autoref{table:time1lvl1T1} and \autoref{table:time2lvl1T1} illustrate that many of the options in the initial and post filtering dataset have no volume nor open interest. We would like to point out that nearly half of the options in the \STARTONE\ to \ENDONE\ dataset have no trading volume. More shockingly, around 20\% of options in this dataset are not open. The role of these unopened options in the portfolios of \citet{constantinides2013} are unclear to us. 
+\autoref{table:time1lvl1T1} and \autoref{table:time2lvl1T1} illustrate that many of the options in the initial and post filtering dataset have no trading volume nor open interest. Importantly, but perhaps not unexpectedly, nearly half of the options in the \STARTONE\ to \ENDONE\ dataset have no trading volume, and around 20\% of options in this dataset have no open interest. The impact of these options in the portfolios of \citet{constantinides2013}, if they are not filtered out of the final analysis, are unclear to us and merits further investigation. 
 
 \newpage
 
