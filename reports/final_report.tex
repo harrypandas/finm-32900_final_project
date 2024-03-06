@@ -123,25 +123,27 @@ figure tags:
 \autoref{fig:time2lvl2fig5}
 
 
-\subsection{Level 3} 
+\subsection{Level 3 Filters} 
 
-The Level 3 filters described in the paper are not as straightforward as the previous two levels, and are comprised of an implied volatility filter (the ``IV filter'') and a put-call parity implied interest rate filter (the ``put-call parity filter'', or ``PCP filter''). In particular, the intricate construction of these filters, and the lack of specific details regarding filter parameters in \citet{constantinides2013}, make the filtered option counts highly sensitive to changes in the filter parameters. Furthermore, since the IV filter and the PCP filter are applied sequentially, errors in replication get compounded downstream. 
+\paragraph{Methodology}
+The Level 3 filters are comprised of an implied volatility filter (the ``IV filter'') and a put-call parity implied interest rate filter (the ``put-call parity filter'', or ``PCP filter''). The Level 3 filters described in the paper were not as straightforward to replicate as the previous two levels. In particular, the intricate construction of these filters, and the lack specificity regarding critical filter parameters in \citet{constantinides2013}, made the filtered option counts highly sensitive to our assumptions for these parameters. 
 
-Since the Level 3 filters were more complex, for the 
+Importantly, since the IV and PCP filters (as well as the Level 1 and Level 2 filters) are applied sequentially, differences in replication get compounded downstream.
 
-\subsubsection{IV Filter}
-
-The objective of the IV filter was to reduce the prevalence of apparent butterfly arbitrage. A butterfly arbitrage occurs when there is a discrepancy in the IV structure across difference moneyness levels for options having the same expiration date. The construction of the IV filter involved multiple fitting a quadratic polynomial to the observed log volatilities, the and filtering out options whose implied volatilities 
-
-
-\subsubsection{PCP Filter}
+\begin{itemize}
+  \item \textit{IV Filter}: The objective of the IV filter was to reduce the prevalence of apparent butterfly arbitrage. A butterfly arbitrage occurs when there is a discrepancy in the IV structure across difference moneyness levels for options having the same expiration date. The construction of the IV filter involved fitting a quadratic polynomial to the observed log volatilities of puts and calls separately (a computationally intensive task). The original paper then measured the relative distance in percent between the fitted log IVs and the observed log IVs, grouped the options into moneyness bins, calculated the standard deviation of the entire sample of relative distances by moneyness bin, and then filtered out options where the relative distance was greater than a certain threshold.
+  \item \textit{PCP Filter}: The objective of the PCP filter was to ensure that put-call parity held for every put-call option pair with the same date, expiry date, and moneyness. This was done by utilizing the put-call parity equation (Equation~\ref{eq:pcp}) to calculate the implied interest rate based on each option pair's bid-ask midpoint prices.
 \begin{align}
   \label{eq:pcp}
   C-P &= S-Ke^{rT} \\
   e^{rT} &= \frac{(S-C+P)}{K} \\
   r &= \frac{1}{T} \cdot \log\left(\frac{S-C+P}{K}\right)
 \end{align}
+\end{itemize}
 
+
+\paragraph{Commentary on Results}
+\citet{constantinides2013} do not provide detail on the relative distance algorithms utilized and are also unclear on what standard deviation threshold was used for exclusion with the Level 3 filters. For our base case, we assumed a percentage relative distance, but sensitized the filtered option counts to Manhattan (absolute) distance, and Euclidean distance. For the standard deviation threshold base case, we excluded options $>$2 standard deviations away, but sensitized 2.0 to 5.0 standard deviations. Despite these efforts, we found that no combination of parameters could replicate the filtered option counts in the original paper, likely due to differences in the core assumptions of the relative distance algorithms and standard deviation thresholds, and potentially due to downstream effects from the Level 1 and Level 2 filters. 
 
 
 appendix: \autoref{app:lvl3}
