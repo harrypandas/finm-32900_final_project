@@ -1,4 +1,7 @@
-# Finm-32900 Final Project: A puzzling replication of the puzzle of index option returns
+# The Puzzle of Filtering Index Options
+*FINM 329: Final Project*
+
+**University of Chicago, Winter 2024**
 
 ## Team
 * Ian Hammock <ihammock@uchicago.edu>
