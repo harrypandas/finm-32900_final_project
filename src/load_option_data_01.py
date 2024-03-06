@@ -16,7 +16,14 @@ START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
 
 
-#https://wrds-www.wharton.upenn.edu/pages/get-data/optionmetrics/ivy-db-us/options/option-prices/
+
+"""
+This file contains our SQL Query to Wharton Research Dataservices (WRDS). 
+
+We connect to the database, and then submit a query per year. 
+
+"""
+
 description_opt_Met = {
 	"secid": "Security ID",
 	"cusip": "CUSIP Number",
@@ -35,7 +42,6 @@ description_opt_Met = {
 
 } 
 
-#https://wrds-www.wharton.upenn.edu/pages/support/manuals-and-overviews/optionmetrics/wrds-overview-optionmetrics/
 
 
 
@@ -146,14 +152,7 @@ def run_load_all_optm_data(data_dir=DATA_DIR,
 
 
 if __name__ == "__main__": 
-	#x = pull_Option_info()
-	#y = pull_Security_info()
-	#z = pull_Opt_Sec_info()
-	#a = pull_FedH15()
-	#b = pull_Opt_Sec_info_WRDS()
-	## Run with doit 
-	# df = pull_Year_Range(yearStart = 1996, yearEnd = 2012)
-	# df.reset_index(drop = True)
+
 
 	data_199601_201201 = load_all_optm_data(data_dir=DATA_DIR,
 											wrds_username=WRDS_USERNAME, 
@@ -165,6 +164,5 @@ if __name__ == "__main__":
 											startDate=START_DATE_02,
 											endDate=END_DATE_02)
 										
-	# save_path = DATA_DIR.joinpath( "data_1996_2012.parquet")
-	# df.to_parquet(save_path)
+
 	

@@ -16,7 +16,12 @@ END_DATE_01 = config.END_DATE_01
 START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
 
+"""
+This file will create a .tex table that compares the amount of options with 
+no volume nor open interest, before and after the application of B1 filters. 
 
+
+"""
 
 def deltaL(df0, df1): 
     return len(df1)-len(df0)

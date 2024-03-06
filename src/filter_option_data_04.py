@@ -30,7 +30,11 @@ exchange_code = "XNYS"
 calendar = get_calendar(exchange_code)
 
 
+'''
+This script will look for if options go missing or found, following the guidelines of Table 2. 
 
+Work in progress. Very tricky that many options expire on not market days. 
+'''
 def removeNotRepeated(df): 
 
 	#Options sharing strike and expiration should be repeated. 
@@ -44,6 +48,8 @@ def removeNotRepeated(df):
 
 
 def enumerateDays(df): 
+	##Assigns an integer to each trading day then we take releative distance. 
+
 	## Prepare trading Days: 
 	startt = df['date'].min().date() 
 	endd = df['date'].max().date()
@@ -139,6 +145,8 @@ def pushWeekendExpiration(df):
 	return df 
 
 def endOfMonth(df): 
+	#This will find the options at the end of the month. 
+
 	## Prepare trading Days: 
 	startt = df['date'].min().date() 
 	endd = df['date'].max().date()
