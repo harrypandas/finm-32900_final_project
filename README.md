@@ -13,7 +13,9 @@
 * Data used: OptionMetrics and Federal Reserve Board Daily Interest Rates
 
 ## Getting Started 
-* Clone repository using your favorite flavor of Git. Set this as your working directory: 
+* Be sure to have a WRDS account: [Wharton Research Data Services](https://wrds-www.wharton.upenn.edu/)
+* Clone this repository using your favorite flavor of Git. Set this as your working directory: 
+	* [https://github.com/harrypandas/finm-32900_final_project.git](https://github.com/harrypandas/finm-32900_final_project.git)
 > Cd */finm-32900_final_project
 * Create a python environment and install packages using pip: 
 > conda create --name puzzle python==3.12 
