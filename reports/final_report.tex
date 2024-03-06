@@ -70,7 +70,7 @@ In the Appendix B of \citet{constantinides2013}, three levels of filters are des
 \subsection{Level 1} 
 Two issues arose when applying this set of filters. First, there are quite a few options in the "Identical but Price" filter that have no implied volatility. This will be taken care of in level two, but knowledge of the implied volatility is required to select the option's price that has volatility closest to the "at the money" volatility. This is limited to about 5 in the 1996-2012 dataset, and most of these options will fall out in the level 2 filters (days to expiration <7 or out of the money). In the 2012 to 2019 dataset we have observed around 355,896 options with no implied volatility. For the purpose of this filter, if an implied volatility is not given it will not be chosen as the option with volatility closest to the at the money,as we will be unable to calculate it and it will fall out in level 2. Additionally, if an option family's "at the money" member cannot have their implied volatilitiy calculated all options will be inevitably dropped due to the "Unable to compute IV" filter. 
 
-Second, an unexplainable difference occurs upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observe over two millions options  with a Volume = 0. Unfortunately, no more details are given in the manuscript describing this step. In order to not diverge from their data pool we choose to drop 0 options, this is reflected in \autoref{table:tableB1}. Further data is included in \autoref{app:lvl1}. 
+Second, an unexplainable difference occurs upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observe over two millions options with a Volume = 0. Unfortunately, no more details are given in the manuscript describing this step. In order to not diverge from their data pool we choose to drop 0 options, this is reflected in \autoref{table:tableB1}. Further data is included in \autoref{app:lvl1}. 
 
 
 \subsection {Level 2}
@@ -96,11 +96,11 @@ figure tags:
 
 \subsection{Level 3} 
 
-The Level 3 filters described in the paper are not as straightforward as the previous two levels, and are comprised of an implied volatility filter (the "IV filter") and a put-call parity implied interest rate filter (the "put-call parity filter", or "PCP filter"). In particular, the intricate construction of these filters, and the lack of specific details regarding filter parameters in \citeit{constantinides2013}, make the filtered option counts highly sensitive to changes in these parameters.
+The Level 3 filters described in the paper are not as straightforward as the previous two levels, and are comprised of an implied volatility filter (the "IV filter") and a put-call parity implied interest rate filter (the "put-call parity filter", or "PCP filter"). In particular, the intricate construction of these filters, and the lack of specific details regarding filter parameters in \citet{constantinides2013}, make the filtered option counts highly sensitive to changes in the filter parameters.
 
-The objective of the IV filter is to reduce the prevalence of apparent butterfly arbitrage. A butterfly arbitrage occurs when there is a discrepancy in the IV structure across difference moneyness levels for options having the same expiration date. The construction of the filter involves fitting a quadratic polynomial to 
+The objective of the IV filter is to reduce the prevalence of apparent butterfly arbitrage. A butterfly arbitrage occurs when there is a discrepancy in the IV structure across difference moneyness levels for options having the same expiration date. The construction of the IV filter involves fitting a quadratic polynomial to the observed log volatilities. 
 
-The  post level 2 filter, where the authors fit a cubic polynomial to the implied volatility and moneyness. They then remove options where the implied volatility is more than 10\% away from the fitted value. The second filter is a post level 2 filter, where the authors remove options where the implied volatility is more than 10\% away from the put-call parity (PCP) implied volatility.
+
 appendix: \autoref{app:lvl3}
 
 
