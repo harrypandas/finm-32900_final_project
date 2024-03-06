@@ -27,7 +27,7 @@
 
 \title{
 The Puzzle of Filtering Index Options
-\\{\color{blue} \large UChicago WI 24: FINN 329\footnote{Taught by Jeremy Bejarano, jbejarano@uchicago.edu }}
+\\{\color{blue} \large UChicago WI 24: FINM 329\footnote{Taught by Jeremy Bejarano, jbejarano@uchicago.edu }}
 }
 % {\color{blue} \large Preliminary. Do not distribute.}
 % }
@@ -52,7 +52,7 @@ Viren Desai, Harrison Holt, Ian Hammock
 
 \doublespacing
 \begin{abstract}
-In this article we will summarize our efforts to replicate the filtering described in Appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. We provide additional insight on how these filters shape the distribution on implied volatility and moneyness. Moreover, due to the unavailability of index option data from 1985 to 1995, we focus our comparison on the dataset of \STARTONE\  to \ENDONE\ as well as extending this analysis forward from \STARTTWO\  to \ENDTWO. Our analysis can be readily found on our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.  
+In this article we will summarize our efforts to replicate the filtering described in Appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. We provide additional insight on how these filters shape the resultant distributions of implied volatility vs moneyness for a large cross-section of SPX calls and puts over two timeframes. Due to the unavailability of index option data from 1985 to 1995, we focus our comparison on the dataset of \STARTONE\  to \ENDONE\ as well as extending this analysis forward from \STARTTWO\  to \ENDTWO. Through a sequence of data visualizations, we show that while intricately constructed data filters may yield elegant results in one time period, these results do not necessarily port over to other time periods. Our analysis can be readily found on our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.  
 
 
 \end{abstract}
@@ -68,16 +68,16 @@ In this article we will summarize our efforts to replicate the filtering describ
 
 In the Appendix B of \citet{constantinides2013}, three levels of filters are described with the intent to minimize quoting errors in the construction of their portfolios. In this section we will summarize our implementation and briefly discuss the differences. Our results are summarized in \autoref{table:tableB1}. 
 \subsection{Level 1} 
-Two issues arose when applying this set of filters. Firstly, there are quite a few options in the "Identical but Price" filter that have no implied volatility. This will be taken care in level two, but knowledge of the implied volatility is required to select the option's price that has volatility closest to the "at the money" volatility. This is limited to about 5 in the 1996-2012 dataset, and most of these options will fall out in the level 2 filters (days to expiration <7 or out of the money. In the 2012 to 2019 dataset we have observed around 355,896 options with no implied volatility. For the purpose of this filter, if an implied volatility is not given it will not be choosen as the option with volatility closest to the at the money,as we will be unable to calculate it and it will fall out in level 2. Additionally, if an option family's "at the money" member cannot have their implied volatilitiy calculated all options will be inevitably dropped due to the "Unable to compute IV" filter. 
+Two issues arose when applying this set of filters. First, there are quite a few options in the "Identical but Price" filter that have no implied volatility. This will be taken care of in level two, but knowledge of the implied volatility is required to select the option's price that has volatility closest to the "at the money" volatility. This is limited to about 5 in the 1996-2012 dataset, and most of these options will fall out in the level 2 filters (days to expiration <7 or out of the money). In the 2012 to 2019 dataset we have observed around 355,896 options with no implied volatility. For the purpose of this filter, if an implied volatility is not given it will not be chosen as the option with volatility closest to the at the money,as we will be unable to calculate it and it will fall out in level 2. Additionally, if an option family's "at the money" member cannot have their implied volatilitiy calculated all options will be inevitably dropped due to the "Unable to compute IV" filter. 
 
-Secondly, an unexplainable difference occurs upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observe over two millions options  with a Volume = 0. Unfortunately, no more details are given in the manuscript describing this step. In order to not diverge from their data pool we choose to drop 0 options, this is reflected in \autoref{table:tableB1}. Further data is included in \autoref{app:lvl1}. 
+Second, an unexplainable difference occurs upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observe over two millions options  with a Volume = 0. Unfortunately, no more details are given in the manuscript describing this step. In order to not diverge from their data pool we choose to drop 0 options, this is reflected in \autoref{table:tableB1}. Further data is included in \autoref{app:lvl1}. 
 
 
 \subsection {Level 2}
 
 appendix: \autoref{app:lvl2}
 
-\subsection{\STARTONE\ to \ENDONE }
+\subsubsection{\STARTONE\ to \ENDONE }
 figure tags: 
 \autoref{fig:time1lvl2fig1}
 \autoref{fig:time1lvl2fig2}
@@ -85,7 +85,7 @@ figure tags:
 \autoref{fig:time1lvl2fig4}
 \autoref{fig:time1lvl2fig5}
 
-\subsection{\STARTTWO\ to \ENDTWO }
+\subsubsection{\STARTTWO\ to \ENDTWO }
 figure tags: 
 \autoref{fig:time2lvl2fig1}
 \autoref{fig:time2lvl2fig2}
@@ -96,16 +96,21 @@ figure tags:
 
 \subsection{Level 3} 
 
+The Level 3 filters described in the paper are not as straightforward as the previous two levels, and are comprised of an implied volatility filter (the "IV filter") and a put-call parity implied interest rate filter (the "put-call parity filter", or "PCP filter"). In particular, the intricate construction of these filters, and the lack of specific details regarding filter parameters in \citeit{constantinides2013}, make the filtered option counts highly sensitive to changes in these parameters.
+
+The objective of the IV filter is to reduce the prevalence of apparent butterfly arbitrage. A butterfly arbitrage occurs when there is a discrepancy in the IV structure across difference moneyness levels for options having the same expiration date. The construction of the filter involves fitting a quadratic polynomial to 
+
+The  post level 2 filter, where the authors fit a cubic polynomial to the implied volatility and moneyness. They then remove options where the implied volatility is more than 10\% away from the fitted value. The second filter is a post level 2 filter, where the authors remove options where the implied volatility is more than 10\% away from the put-call parity (PCP) implied volatility.
 appendix: \autoref{app:lvl3}
 
 
-\subsection{\STARTONE\ to \ENDONE }
+\subsubsection{\STARTONE\ to \ENDONE }
 figure tags: 
 \autoref{fig:time1lvl3fig1}
 \autoref{fig:time1lvl3fig2}
 \autoref{fig:time1lvl3fig3}
 \autoref{fig:time1lvl3fig4}
-\subsection{\STARTTWO\ to \ENDTWO }
+\subsubsection{\STARTTWO\ to \ENDTWO }
 figure tags: 
 \autoref{fig:time2lvl3fig1}
 \autoref{fig:time2lvl3fig2}
@@ -150,7 +155,7 @@ We would like to note an interesting aspect of the \STARTONE\ to \ENDONE\ datase
 
 \section{Conclusion} 
 
-Our findings illustrate that seemingly straight forward instructions for filtering data may lead to divergent results. To reduce these errors, we suggest that journals require computationally intense manuscripts, such as \citet{constantinides2013}, publish their code base along with their findings. Our data acquisition is briefly described in \autoref{app:data}, and our code base can be found our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.
+Our findings illustrate that seemingly straight forward instructions for filtering data may lead to divergent results. To reduce these errors, we suggest that journals require that computationally intense manuscripts, such as \citet{constantinides2013}, publish their code base along with their findings. Our data acquisition is briefly described in \autoref{app:data}, and our code base can be found our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.
 
 
 
