@@ -27,10 +27,7 @@
 
 \title{
 The Puzzle of Filtering Index Options
-\subtitle{FINM 329 Final Project, Winter 2024\footnote{Taught by Jeremy Bejarano, jbejarano@uchicago.edu}
-}
-\\{\color{blue} \large University of Chicago
-}
+\\{\color{blue} \large University of Chicago, Winter 2024\footnote{Final project for FINM 329; taught by Jeremy Bejarano.}}
 }
 % {\color{blue} \large Preliminary. Do not distribute.}
 % }
@@ -55,7 +52,7 @@ Viren Desai, Harrison Holt, Ian Hammock
 
 \doublespacing
 \begin{abstract}
-In this report we summarize our efforts to replicate the filtering described in Appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. We provide additional insight on how these filters shape the resultant distributions of implied volatility (``IV'') and moneyness for a large cross-section of SPX index calls and puts over two different timeframes. Due to the unavailability of SPX option data from 1985 to 1995 in the Berkeley dataset, we focus our analysis on replicating the data filtration results in the original paper using OptionMetrics data from \STARTONE\  to \ENDONE\. We then attempt to reproduce similar results by applying the data filters to the period from \STARTTWO\  to \ENDTWO. Through a sequence of data visualizations, we show that while the paper's intricately constructed data filters may yield elegant results when applied to one time period, these results do not necessarily port over to other time periods. The implications for option pricing models based on such time-fragile data filters would be an interesting follow-up study. Our analysis can be readily found on our \href{https://tinyurl.com/3psws69d}{Github} \footnote{ \url{https://tinyurl.com/3psws69d}}.  
+In this report we summarize our efforts to replicate the data filtration process described in Appendix B of \textit{The Puzzle of Index Option Returns} by \citet{constantinides2013}. These filters shape the underlying distribution of implied volatility (``IV'') and moneyness for a large cross-section of SPX index options (1 million+), and were used to build and price 54 option portfolios. Due to the unavailability of SPX option data from 1985 to 1995, we focus our analysis on replicating the filtration results OptionMetrics data from \STARTONE\  to \ENDONE. We then apply these filters to more recent data from \STARTTWO\  to \ENDTWO. Through a sequence of data visualizations, we show that while the paper's intricately constructed data filters may yield elegant results when applied to one time period, these results do not necessarily port over to other time periods. The implications for option pricing models based on such time-fragile data filters would be an interesting follow-up study. Our detailed analysis and code can be readily found on \href{https://tinyurl.com/3psws69d}{Github}\footnote{ \url{https://tinyurl.com/3psws69d}}.  
 
 
 \end{abstract}
@@ -69,34 +66,58 @@ In this report we summarize our efforts to replicate the filtering described in 
 \pagenumbering{arabic}
 \section{Replicating Table B1}
 
-Appendix B of \citet{constantinides2013} outlines three levels of filters applied to millions of SPX call and put options with an intent to minimize quoting errors in the construction of the authors' 54 option portfolios. In this report we will summarize our implementation, and briefly discuss the challenges and differences encountered in our attempted replication and the subsequent reproduction for a later time period. Our results are summarized in \autoref{table:tableB1}. 
+Appendix B of \citet{constantinides2013} outlines three levels of filters applied to millions of SPX call and put options with an intent to minimize quoting errors in the construction of the paper's 54 option portfolios. In this report we will summarize our implementation, and briefly discuss the challenges and differences encountered in our attempted replication and the subsequent reproduction for a later time period. Our results are summarized in \autoref{table:tableB1}. 
 
 \subsection{Level 1 Filters} 
 
 
-\textit{Methodology}
+\paragraph{Methodology}
 
 The Level 1 filters comprised of an ``Identical'' filter, to filter out duplicate options in the OptionMetrics data (measured by identical option type, strike, expiration date, and price), and an ``Identical Except Price'' filter (the ``IEP filter''), which aimed to filter out options identical in all respects except price. In these cases, the paper's authors retained options whose quoted T-bill-based IV was closest to its moneyness neighbors, and deleted the rest.
 
+\paragraph{Commentary on Results}
 
-\textit{Commentary on Results}
+Two issues arose when applying this set of filters. First, there were quite a few options in the IEP filter that have no reported IV. While this was not explicitly addressed in the paper's description of the Level 1 filters, it created an issue with replication because the T-bill-based IV was required to identify the nearest moneyness neighbors. The missing IV option count here was limited to about 5 in the 1996-2012 dataset, but in the 2012-2019 dataset we observed 355,896 options with no reported IV. For the purpose of this filter, if an IV was not reported, it was not chosen as the option with IV closest to the at the money. Additionally, if an option group's ``at the money'' member could not have their IV calculated by numerical methods (described later in this report), all options in that group would be subsequently dropped via the ``Unable to compute IV'' filter. 
 
-Two issues arose when applying this set of filters. First, there were quite a few options in the IEP filter that have no reported IV. While this was not explicitly addressed in the paper's description of the Level 1 filters, it created an issue with replication because the T-bill-based IV was required to identify the nearest moneyness neighbors. The missing IV option count here was limited to about 5 in the 1996-2012 dataset, but in the 2012 to 2019 dataset we observed 355,896 options with no reported IV. For the purpose of this filter, if an IV was not reported, it was not chosen as the option with IV closest to the at the money. Additionally, if an option group's ``at the money'' member could not have their IV calculated by numerical methods (described later in this report), all options in that group would be subsequently dropped via the ``Unable to compute IV'' filter. 
+Second, an unexplainable difference occurred upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observed over two millions options with a Volume = 0. Unfortunately, no more details were given in the manuscript describing this step. In order to not diverge from their data pool we chose to drop 0 options, this is reflected in \autoref{table:tableB1}. 
 
-Second, an unexplainable difference occurs upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observed over two millions options with a Volume = 0. Unfortunately, no more details are given in the manuscript describing this step. In order to not diverge from their data pool we choose to drop 0 options, this is reflected in \autoref{table:tableB1}. Further data is included in \autoref{app:lvl1}. 
+Further data is included in \autoref{app:lvl1}. 
 
 
 \subsection {Level 2 Filters}
-\textit{Methodology}
 
-The Level 1 filters comprised of an ``Identical'' filter, to filter out duplicate options in the OptionMetrics data (measured by identical option type, strike, expiration date, and price), and an ``Identical Except Price'' filter (the ``IEP filter''), which aimed to filter out options identical in all respects except price. In these cases, the paper's authors retained options whose quoted T-bill-based IV was closest to its moneyness neighbors, and deleted the rest.
+\paragraph{Methodology}
+
+The Level 2 filters comprised of: 
+\begin{itemize}
+  \item \textit{Days to Maturity $<$7 or $>$180}: To filter out options with less than a week to expiration (due to erratic price behavior) or more than 180 days to expiration (due to low liquidity).
+  \item \textit{IV $<$5\% or $>$100\%}: To filter out options with extreme IV values.
+  \item \textit{Moneyness $<$0.8 or $>$1.2}: To filter out options with extreme moneyness values, due to these options having low liquidity and little value beyond the intrinsic value of the option.
+  \item \textit{Implied Interest Rate $<$0}: To filter out options with negative implied interest rates, which are likely due to quoting errors. To calculate the implied interest rate, we compute the put-call parity implied interest rate using each option pair's bid-ask midpoints as the price. The put-call parity implied interest rate is the interest rate that makes the put-call parity equation hold.
+
+\begin{equation}  
+  \begin{align}
+    C-P &= S-Ke^{rT} \\
+    e^{rT} &= \frac{(S-C+P)}{K} \\
+    r &= \frac{1}{T} \cdot \log\left(\frac{S-C+P}{K}\right)
+  \end{align}
+  \label{eq:pcpIntRate}
+\end{equation}
+
+  \item \textit{Unable to compute IV}
+\end{itemize}
 
 
-\textit{Commentary on Results}
+an ``Identical'' filter, to filter out duplicate options in the OptionMetrics data (measured by identical option type, strike, expiration date, and price), and an ``Identical Except Price'' filter (the ``IEP filter''), which aimed to filter out options identical in all respects except price. In these cases, the paper's authors retained options whose quoted T-bill-based IV was closest to its moneyness neighbors, and deleted the rest.
 
-Two issues arose when applying this set of filters. First, there were quite a few options in the IEP filter that have no reported IV. While this was not explicitly addressed in the paper's description of the Level 1 filters, it created an issue with replication because the T-bill-based IV was required to identify the nearest moneyness neighbors. The missing IV option count here was limited to about 5 in the 1996-2012 dataset, but in the 2012 to 2019 dataset we observed 355,896 options with no reported IV. For the purpose of this filter, if an IV was not reported, it was not chosen as the option with IV closest to the at the money. Additionally, if an option group's ``at the money'' member could not have their IV calculated by numerical methods (described later in this report), all options in that group would be subsequently dropped via the ``Unable to compute IV'' filter. 
+\paragraph{Commentary on Results}
 
-Second, an unexplainable difference occurs upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observed over two millions options with a Volume = 0. Unfortunately, no more details are given in the manuscript describing this step. In order to not diverge from their data pool we choose to drop 0 options, this is reflected in \autoref{table:tableB1}. Further data is included in \autoref{app:lvl2}. 
+Two issues arose when applying this set of filters. First, there were quite a few options in the IEP filter that have no reported IV. While this was not explicitly addressed in the paper's description of the Level 1 filters, it created an issue with replication because the T-bill-based IV was required to identify the nearest moneyness neighbors. The missing IV option count here was limited to about 5 in the 1996-2012 dataset, but in the 2012-2019 dataset we observed 355,896 options with no reported IV. For the purpose of this filter, if an IV was not reported, it was not chosen as the option with IV closest to the at the money. Additionally, if an option group's ``at the money'' member could not have their IV calculated by numerical methods (described later in this report), all options in that group would be subsequently dropped via the ``Unable to compute IV'' filter. 
+
+Second, an unexplainable difference occurs upon the application of the Volume = 0 filter. In Table B1 of \citet{constantinides2013}, no options have a Volume = 0 in their dataset. However, we observed over two millions options with a Volume = 0. Unfortunately, no more details are given in the manuscript describing this step. In order to not diverge from their data pool we choose to drop 0 options, this is reflected in \autoref{table:tableB1}. 
+
+Further data is included in \autoref{app:lvl2}. 
+
 
 \subsubsection{\STARTONE\ to \ENDONE }
 figure tags: 
