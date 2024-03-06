@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import config
 from pathlib import Path
+import random
 
 DATA_DIR = Path(config.DATA_DIR)
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
@@ -42,11 +43,15 @@ def build_l2_days_to_mat_plot(optm_l1_df, date_range):
 
 def build_l2_iv_tmm_plot(optm_l1_df, optm_l2_df, date_range):
     plt.clf()
-    plt.scatter(optm_l1_df['time_to_maturity_yrs'], optm_l1_df['impl_volatility'], label='Pre-Filter')
-    plt.scatter(optm_l2_df['time_to_maturity_yrs'], optm_l2_df['impl_volatility'], label='Post-Filter', color='darkred')
+    sample_size = 200000  # Adjust as needed
+    sample_ind_l1 = random.sample(range(len(optm_l1_df)), min(sample_size, len(optm_l1_df)))
+    sample_ind_l2 = random.sample(range(len(optm_l2_df)), min(sample_size, len(optm_l2_df)))
+
+    plt.plot(optm_l1_df.iloc[sample_ind_l1]['time_to_maturity_yrs'], optm_l1_df.iloc[sample_ind_l1]['impl_volatility'], 'o', alpha=0.5, label='Pre-Filter')
+    plt.plot(optm_l2_df.iloc[sample_ind_l2]['time_to_maturity_yrs'], optm_l2_df.iloc[sample_ind_l2]['impl_volatility'], 'o', alpha=0.5, label='Post-Filter', color='darkred')
     plt.xlabel('Time to Maturity (Years)')
     plt.ylabel('Implied Volatility')
-    plt.title('Implied Volatility vs Time to Maturity')
+    plt.title('Implied Volatility vs Time to Maturity (Random Sample)')
     plt.legend()
     plt.tight_layout()
     plt.savefig(OUTPUT_DIR / f'L2_{date_range}_fig2.png')
@@ -71,19 +76,23 @@ def build_l2_iv_dist_plot(optm_l2_df, optm_l2_iv, date_range):
     plt.savefig(OUTPUT_DIR / f'L2_{date_range}_fig3.png')
 
 def build_l2_mny_plot(optm_l2_iv, optm_l2_mny, date_range):
+    sample_size = 200000  # Adjust as needed
+    sample_ind_iv = random.sample(range(len(optm_l2_iv)), min(sample_size, len(optm_l2_iv)))
+    sample_ind_mny = random.sample(range(len(optm_l2_mny)), min(sample_size, len(optm_l2_mny)))
+
     fig, axes = plt.subplots(1, 2, figsize=(10, 4))
 
     # Plotting optm_l2_iv
-    axes[0].scatter(optm_l2_iv['mnyns'], optm_l2_iv['volume'])
+    axes[0].scatter(optm_l2_iv.iloc[sample_ind_iv]['mnyns'], optm_l2_iv.iloc[sample_ind_iv]['volume'])
     axes[0].set_xlabel('Moneyness')
     axes[0].set_ylabel('Volume')
-    axes[0].set_title('Moneyness vs Volume (Pre-Filter)')
+    axes[0].set_title('Moneyness vs Volume (Pre-Filter Sample)')
 
     # Plotting optm_l2_mny
-    axes[1].scatter(optm_l2_mny['mnyns'], optm_l2_mny['volume'], color='darkred')
+    axes[1].scatter(optm_l2_mny.iloc[sample_ind_mny]['mnyns'], optm_l2_mny.iloc[sample_ind_mny]['volume'], color='darkred')
     axes[1].set_xlabel('Moneyness')
     axes[1].set_ylabel('Volume')
-    axes[1].set_title('Moneyness vs Volume (Post-Filter)')
+    axes[1].set_title('Moneyness vs Volume (Post-Filter Sample)')
 
     # Add dotted line representing the range 0.8 to 1.2 on x-axis
     axes[0].axvline(0.8, color='black', linestyle='dotted')
@@ -96,14 +105,18 @@ def build_l2_mny_plot(optm_l2_iv, optm_l2_mny, date_range):
     plt.savefig(OUTPUT_DIR / f'L2_{date_range}_fig4.png')
 
 def build_l2_nocomp_iv_plot(optm_l2_int, optm_l2_univ, date_range):
-    nan_percentage = optm_l2_int.loc[optm_l2_int['impl_volatility'].isna()].groupby(['time_to_maturity']).size()/optm_l2_int.groupby(['time_to_maturity']).size()*100
-    
+    sample_size = 100000  # Adjust as needed
+    sample_ind_univ = random.sample(range(len(optm_l2_univ)), min(sample_size, len(optm_l2_univ)))
+    size_x = optm_l2_univ.shape[0]/sample_size
+
+    nan_percentage = (optm_l2_int.iloc[sample_ind_univ].loc[optm_l2_int['impl_volatility'].isna()].groupby(['time_to_maturity']).size())/(optm_l2_int.iloc[sample_ind_univ].groupby(['time_to_maturity']).size())*100
+
     plt.clf()
     plt.scatter(nan_percentage.index, nan_percentage, alpha=0.5, s=10, label='Pre-Filter')
-    plt.scatter(optm_l2_univ['time_to_maturity'], optm_l2_univ['impl_volatility'], color='darkred', alpha=0.1, s=10, label='Post-Filter')
+    plt.scatter(optm_l2_univ.iloc[sample_ind_univ]['time_to_maturity'], optm_l2_univ.iloc[sample_ind_univ]['impl_volatility'], color='darkred', alpha=0.1, s=10, label='Post-Filter')
     plt.xlabel('Time to Maturity')
     plt.ylabel('Percentage of NaN by Implied Volatility')
-    plt.title('Percentage of NaN Implied Volatility by Time to Maturity')
+    plt.title('Percentage of NaN IV by Time to Maturity (Random Sample)')
     plt.legend()
 
     plt.savefig(OUTPUT_DIR / f'L2_{date_range}_fig5.png')
