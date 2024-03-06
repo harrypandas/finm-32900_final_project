@@ -100,6 +100,7 @@ The Level 2 filters comprised of the following:
 
 
 \paragraph{Commentary on Results}
+For the purposes of the IV filters, we tested multiple numerical methods for computing IV, including binary search, Newton-Raphson, and quasi-Newton methods using the \texttt{scipy.optimize} package in Python. We found that no single method could compute IV for all options, in all time periods, and that the percentage of options with incomputable IVs increased as time to maturity decreased. Importantly, the reasons for inability to compute IV were not explicitly addressed in the paper, and the impact of these options on the final option portfolios is unclear.
 
 @{Harrison Holt}: Please send commentary / challenges on your results to @Viren. bullets are fine, I'll reword. just want to capture major points.
 
