@@ -19,7 +19,10 @@ END_DATE_01 = config.END_DATE_01
 START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
 
+"""
+This script will format the table2 parquet for integration with latex. 
 
+"""
 
 def convertStr(x): 
 	return x if type(x) == type('str') else f"{x:,.0f}"

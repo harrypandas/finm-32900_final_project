@@ -22,7 +22,14 @@ END_DATE_01 = config.END_DATE_01
 START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
 
+"""
+This file will be called by doit to run through all of the Appendix B filters. 
 
+This file will easily generate table B, a benefit of running the filters in the same file. 
+
+Through the application of each level, intermediate files are saved to DATA_DIR/ intermediate. 
+
+"""
 
 
 def getLengths(df): 

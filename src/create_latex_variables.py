@@ -20,6 +20,11 @@ START_DATE_02 =config.START_DATE_02
 END_DATE_02 = config.END_DATE_02
 
 
+"""
+This script will take the dates from the .env file and import them into latex. 
+
+This is helpful for importing plots and tables, as their names rely upon what time range one chooses. 
+"""
 
 def makeVar(s1,e1,s2,e2): 
 	string = r' \newcommand{\STARTONE}{' + f'{s1[:7]}' + r'}' + '\n'
