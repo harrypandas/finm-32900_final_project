@@ -255,4 +255,5 @@ drafts/draft_bp.pdf
 
 rubric.docx
 *.pdf
+!final_report.pdf
 
