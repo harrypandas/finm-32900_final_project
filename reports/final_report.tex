@@ -125,12 +125,23 @@ figure tags:
 \section{Replicating Table2}
 \autoref{tab:t2} describes how many options are found, go missing, or expire in the dataset. An option is found if it reappears the next trading day. An option is missing for if it does not reappear the next trading day. Multiple days missing, counts as multiple options missing. Lastly, if an option is lost and expires this is noted as expired. 
 
-We would like to note an interesting aspect of this dataset. Over 80\% of the options expire on a Saturday or a non-trading day. To handle this, we push the expiration day to the nearest Friday, presumably the nearest trading day. However, there are quite a few edge cases which would explain the discrepancy between our analysis and \citet{constantinides2013}. Further investigation is required. 
+We would like to note an interesting aspect of the \STARTONE\ to \ENDONE\ dataset. Over 80\% of the options expire on a Saturday or a non-trading day. To handle this, we push the expiration day to the nearest Friday, presumably the nearest trading day. However, there are quite a few edge cases which would explain the discrepancy between our analysis and \citet{constantinides2013}. Further investigation is required. A short summary of the day distribution is given in \autoref{table:T2days}. 
 
 %To implement this table we use pandas market calendars to produce an array of NYSE trading days. We then assign an integer to each day and merge this to our dataframe. To determine the time an option is lost, we use a relative distance argument and take differences using the integers. This is much faster than subtracting datetime objects with conditionals on if we're getting a trading day. adf
 
 
+\begin{table}[ht]
 
+\centering
+\captionsetup{font={normalsize,bf}}
+\caption{Option Expiration days}
+
+
+\input{\PathToOutput/T2_days.tex}
+\captionsetup{font={normalsize,bf}}
+\caption*{Trading days are determined by the NYSE calendar provided by pandas market days. }
+\label{table:T2days}
+\end{table}
 
 
 

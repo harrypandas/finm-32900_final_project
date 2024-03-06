@@ -291,7 +291,7 @@ def task_Table2_Analysis():
     file_dep = [
     "./src/filter_option_data_04.py", 
     DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
-    DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
+    DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L3filter.parquet",
     ]
     targets = [
         OUTPUT_DIR /f"table2_all_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet",
@@ -335,6 +335,25 @@ def task_create_Table2():
     }
     return actdict
 
+def task_create_Table2_days(): 
+    file_dep = [
+        "./src/create_T2_plots.py", 
+        DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
+        DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L3filter.parquet",
+        ]
+    file_output = ["table2.tex" ]
+    targets = [OUTPUT_DIR / f'T2_days.tex']
+
+    actdict = {
+    'actions': [
+    "ipython ./src/create_T2_plots.py"
+    ], 
+    "targets": targets,
+    "file_dep": file_dep,
+    'clean': True,
+    "verbosity": 2,
+    }
+    return actdict
 
 
 def task_compile_latex_docs():
@@ -359,7 +378,7 @@ def task_compile_latex_docs():
                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3.png",
                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig4.png",
                    f"L2_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig5.png",
-
+                   'T2_days.tex',
 
                    ]
     
