@@ -1,6 +1,7 @@
 # The Puzzle of Filtering Index Options
-## FINM 329: Final Project
-## University of Chicago, Winter 2024
+*FINM 329: Final Project*
+*University of Chicago, Winter 2024*
+
 ## Team
 * Ian Hammock <ihammock@uchicago.edu>
 * Harrison Holt <hholt@uchicago.edu>
