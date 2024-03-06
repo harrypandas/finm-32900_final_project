@@ -14,16 +14,18 @@
 
 ## Getting Started 
 * Clone repository using your favorite flavor of Git. Set this as your working directory: 
-> Cd ./finm-32900_final_project
+> Cd */finm-32900_final_project
 * Create a python environment and install packages using pip: 
 > conda create --name puzzle python==3.12 
+
 > conda activate puzzle
+
 > pip install -r requirements.txt 
 
 * Optional: 
 	* Copy env.example to .env 
 	* In .env you may provide your WRDS user name, if you do not do this, you will be prompted for username and password twice 
-* In the ./finm-32900_final_project working directory run: 
+* In the */finm-32900_final_project working directory run: 
 > doit
 
 ## Task List
