@@ -88,20 +88,20 @@ Further data is included in \autoref{app:lvl1}.
 
 \paragraph{Methodology}
 
-The Level 2 filters comprised of: 
+The Level 2 filters comprised of the following: 
 \begin{itemize}
-  \item \textit{Days to Maturity $<$7 or $>$180}: To filter out options with less than a week to expiration (due to erratic price behavior) or more than 180 days to expiration (due to low liquidity).
-  \item \textit{IV $<$5\% or $>$100\%}: To filter out options with extreme IV values.
-  \item \textit{Moneyness $<$0.8 or $>$1.2}: To filter out options with extreme moneyness values, due to these options having low liquidity and little value beyond the intrinsic value of the option.
-  \item \textit{Implied Interest Rate $<$0}: To filter out options with negative implied interest rates, which are likely due to quoting errors. To calculate the implied interest rate, we compute the put-call parity implied interest rate using each option pair's bid-ask midpoints as the price. The put-call parity implied interest rate is the interest rate (\textit{r}) that makes the put-call parity equation hold (Equation~\ref{eq:pcp}).
-  \item \textit{Unable to compute IV}: To filter out options where we could not compute the IV, due to missing parameters for numerical option price solvers. To note, we utilize the Black-Scholes-Merton option pricing formulae for European Call options\footnote{The Black-Scholes formulae for the price of European call ($C$) and put ($P$) options are given by $C = S_0 \Phi(d_1) - K e^{-rT} \Phi(d_2)$ and $P = K e^{-rT} \Phi(-d_2) - S_0 \Phi(-d_1)$, respectively, where $d_1 = \frac{\ln(\frac{S_0}{K}) + (r + \frac{\sigma^2}{2})T}{\sigma\sqrt{T}}$ and $d_2 = d_1 - \sigma\sqrt{T}$. Here, $S_0$ is the current stock price, $K$ is the strike price, $r$ is the risk-free interest rate, $\sigma$ is the volatility of the stock's return, $T$ is the time to expiration, $\Phi$ is the cumulative distribution function of the standard normal distribution.
-  }. This was typically due to parameter values for the options being unavailable, or too extreme to be used with the standard pricing formulae.
+  \item \textit{Days to Maturity $<$7 or $>$180}: The objective of the Days to Maturity filter was to exclude options with less than a week to expiration (typically exhibiting erratic price behavior) or more than 180 days to expiration (typically exhibiting low liquidity).
+  \item \textit{IV $<$5\% or $>$100\%}: The objective of Level 2 IV filter was to exclude options with extreme IV values.
+  \item \textit{Moneyness $<$0.8 or $>$1.2}: The objective of the Moneyness filter was to exclude options with extreme moneyness values, due to these options having low liquidity and little value beyond the intrinsic value of the option.
+  \item \textit{Implied Interest Rate $<$0}: The objective of the Level 2 Implied Interest Rate filter was to exclude options with negative implied interest rates, which are likely due to quoting errors. To calculate the implied interest rate, we compute the put-call parity implied interest rate using each option pair's bid-ask midpoints as the price. The put-call parity implied interest rate is the interest rate (\textit{r}) that makes the put-call parity equation hold (Equation~\ref{eq:pcp}).
+  \item \textit{Unable to compute IV}: The objective of this filter was to exclude options where the IV was not computable, due to missing or extreme parameters for numerical option price solvers. To note, we utilize the Black-Scholes-Merton option pricing formulae for European options\footnote{The Black-Scholes formulae for the price of European call ($C$) and put ($P$) options are given by $C = S_0 \Phi(d_1) - K e^{-rT} \Phi(d_2)$ and $P = K e^{-rT} \Phi(-d_2) - S_0 \Phi(-d_1)$, respectively, where $d_1 = \frac{\ln(\frac{S_0}{K}) + (r + \frac{\sigma^2}{2})T}{\sigma\sqrt{T}}$ and $d_2 = d_1 - \sigma\sqrt{T}$. Here, $S_0$ is the current stock price, $K$ is the strike price, $r$ is the risk-free interest rate, $\sigma$ is the volatility of the stock's return, $T$ is the time to expiration, $\Phi$ is the cumulative distribution function of the standard normal distribution.
+  }.
 \end{itemize}
 
 
 \paragraph{Commentary on Results}
 
-@{Harrison Holt}: Send commentary on your results / challenges to @Viren? bullets are fine, I'll reword. just want to capture major points.
+@{Harrison Holt}: Please send commentary / challenges on your results to @Viren. bullets are fine, I'll reword. just want to capture major points.
 
 Further data is included in \autoref{app:lvl2}. 
 
@@ -143,7 +143,7 @@ Importantly, since the IV and PCP filters (as well as the Level 1 and Level 2 fi
 
 
 \paragraph{Commentary on Results}
-\citet{constantinides2013} do not provide detail on the relative distance algorithms utilized and are also unclear on what standard deviation threshold was used for exclusion with the Level 3 filters. For our base case, we assumed a percentage relative distance, but sensitized the filtered option counts to Manhattan (absolute) distance, and Euclidean distance. For the standard deviation threshold base case, we excluded options $>$2 standard deviations away, but sensitized 2.0 to 5.0 standard deviations. Despite these efforts, we found that no combination of parameters could replicate the filtered option counts in the original paper, likely due to differences in the core assumptions of the relative distance algorithms and standard deviation thresholds, and potentially due to downstream effects from the Level 1 and Level 2 filters. 
+\citet{constantinides2013} do not provide detail on the relative distance algorithms utilized and are also unclear on what standard deviation threshold was used for exclusion with the Level 3 filters. For our base case replication, we assumed a percentage relative distance, but sensitized the filtered option counts to Manhattan (absolute) distance, and Euclidean distance. For the standard deviation threshold base case, we excluded options $>$2 standard deviations away, but sensitized 2.0 to 5.0 standard deviations. Despite these efforts, we found that no combination of parameters could replicate the filtered option counts in the original paper, likely due to differences in the core assumptions of the relative distance algorithms and standard deviation thresholds, and potentially due to downstream effects from the Level 1 and Level 2 filters. 
 
 
 appendix: \autoref{app:lvl3}
