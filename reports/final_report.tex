@@ -66,8 +66,32 @@ In this report we summarize our efforts to replicate the data filtration process
 \pagenumbering{arabic}
 \section{Replicating Table B1}
 
-Appendix B of \citet{constantinides2013} outlines three levels of filters applied to millions of SPX call and put options with an intent to minimize quoting errors in the construction of the paper's 54 option portfolios. In this report we will summarize our implementation, and briefly discuss the challenges and differences encountered in our attempted replication and the subsequent reproduction for a later time period. Our results are summarized in \autoref{table:tableB1}. 
+Appendix B of \citet{constantinides2013} outlines three levels of filters applied to millions of SPX call and put options with an intent to minimize quoting errors in the construction of the paper's 54 option portfolios. In this report we will summarize our implementation, and briefly discuss the challenges and differences encountered in our attempted replication and the subsequent reproduction for a later time period. Our final results are summarized in \autoref{table:tableB1}. 
+\newpage
 
+\thispagestyle{empty}
+\begin{landscape}
+
+\begin{table}
+  \centering
+  \captionsetup{font={normalsize, bf}}
+  \caption{Table B1 Summary}
+  \resizebox{1.4\textwidth}{!}{
+  \hspace*{-4cm}
+  \input{\PathToOutput/tableB1.tex}
+  }
+  \captionsetup{font={small, it}}
+  \caption*{
+    Number of observations that are removed upon application of Appendix B filters. 
+  }
+  \label{table:tableB1}
+\end{table}
+
+\vfill
+\raisebox{-3.5cm}{\makebox[\linewidth]{\thepage}}
+\end{landscape}
+
+\newpage
 \subsection{Level 1 Filters} 
 
 
@@ -86,8 +110,8 @@ The impact of these options in the final portfolios of \citet{constantinides2013
 
 
 % tables
-\vspace{10pt}
-\begin{table}[ht]
+\vspace{20pt}
+\begin{table}[H]
 
   \centering
   \captionsetup{font={normalsize,bf}}
@@ -102,8 +126,8 @@ The impact of these options in the final portfolios of \citet{constantinides2013
 \end{table}
   
   
-\vspace{10pt}
-\begin{table}[ht]
+\vspace{20pt}
+\begin{table}[H]
   \centering
   \captionsetup{font={normalsize,bf}}
   \caption{\STARTTWO\ to \ENDONE\ Summary of Options with No Volume Nor Open Interest}
@@ -116,15 +140,9 @@ The impact of these options in the final portfolios of \citet{constantinides2013
   \label{table:time2lvl1T1}
 \end{table}
 
-
-Further data on the Level 1 filters is included in \autoref{app:lvl1}. 
-
-
 \clearpage
 
-
 \subsection {Level 2 Filters}
-
 \paragraph{Methodology}
 
 The Level 2 filters comprised of the following: 
@@ -132,41 +150,38 @@ The Level 2 filters comprised of the following:
   \item \textit{Days to Maturity $<$7 or $>$180}: The objective of the Days to Maturity filter was to exclude options with less than a week to expiration (typically exhibiting erratic price behavior) or more than 180 days to expiration (typically exhibiting low liquidity).
   \item \textit{IV $<$5\% or $>$100\%}: The objective of Level 2 IV filter was to exclude options with extreme IV values.
   \item \textit{Moneyness $<$0.8 or $>$1.2}: The objective of the Moneyness filter was to exclude options with extreme moneyness values, due to these options having low liquidity and little value beyond the intrinsic value of the option.
-  \item \textit{Implied Interest Rate $<$0}: The objective of the Level 2 Implied Interest Rate filter was to exclude options with negative implied interest rates, which are likely due to quoting errors. To calculate the implied interest rate, we compute the put-call parity implied interest rate using each option pair's bid-ask midpoints as the price. The put-call parity implied interest rate is the interest rate (\textit{r}) that makes the put-call parity equation hold (Equation~\ref{eq:pcp}).
+  \item \textit{Implied Interest Rate $<$0}: The objective of the Level 2 Implied Interest Rate filter was to exclude options with negative implied interest rates, which are likely due to quoting errors. To calculate the implied interest rate, we compute the put-call parity implied interest rate using each option pair's bid-ask midpoints as the price. The put-call parity implied interest rate is the interest rate (\textit{r}) that makes the put-call parity equation hold (\autoref{eq:pcp}).
   \item \textit{Unable to compute IV}: The objective of this filter was to exclude options where the IV was not computable, due to missing or extreme parameters for numerical option price solvers. To note, we utilize the Black-Scholes-Merton option pricing formulae for European options\footnote{The Black-Scholes formulae for the price of European call ($C$) and put ($P$) options are given by $C = S_0 \Phi(d_1) - K e^{-rT} \Phi(d_2)$ and $P = K e^{-rT} \Phi(-d_2) - S_0 \Phi(-d_1)$, respectively, where $d_1 = \frac{\ln(\frac{S_0}{K}) + (r + \frac{\sigma^2}{2})T}{\sigma\sqrt{T}}$ and $d_2 = d_1 - \sigma\sqrt{T}$. Here, $S_0$ is the current stock price, $K$ is the strike price, $r$ is the risk-free interest rate, $\sigma$ is the volatility of the stock's return, $T$ is the time to expiration, $\Phi$ is the cumulative distribution function of the standard normal distribution.
   }.
 \end{itemize}
 
 
 \paragraph{Analysis of Results and Commentary}
-For the purposes of the IV filters, we tested multiple numerical methods for computing IV, including binary search, Newton-Raphson, and quasi-Newton methods using the \texttt{scipy.optimize} package in Python. We found that no single method could compute IV for all options, in all time periods, and that the percentage of options with uncomputable IVs increased as time to maturity decreased (see Figures~\ref{fig:time1lvl2fig5} and \ref{fig:time2lvl2fig5}). Importantly, the reasons for inability to compute IV were not explicitly addressed in the paper, and despite the low remaining percentage of uncomputable IVs in the post-filter data, we do not know what impact the inclusion or exclusion of these options would have on the final option portfolios. 
+For the purposes of the IV filters, we tested multiple numerical methods for computing IV, including binary search, Newton-Raphson, and quasi-Newton methods using the \texttt{scipy.optimize} package in Python. We found that no single method could compute IV for all options, in all time periods, and that the percentage of options with uncomputable IVs increased as time to maturity decreased (see \autoref{fig:time1lvl2fig5} and \autoref{fig:time2lvl2fig5}). Importantly, the reasons for inability to compute IV were not explicitly addressed in the paper, and despite the low remaining percentage of uncomputable IVs in the post-filter data, we do not know what impact the inclusion or exclusion of these options would have on the final option portfolios. 
 
-Further data on the results of the Level 2 filters is included in \autoref{app:lvl2}.
 
-\color{red}\textit{@{Harrison Holt}: Please send additional commentary / challenges on your results to @Viren. bullets are fine, I'll reword. just want to capture major points.}
-\color{black}
-
-\begin{figure}[ht] % You can adjust the placement options (htbp) as needed
+\vspace{20pt}
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
   \captionsetup{font={normalsize,bf}}
   \caption{\STARTONE\ to \ENDONE\ Pre- and Post-Filter Uncomputable IVs by Time to Maturity}
   \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig5.png}
   \captionsetup{font={small, it}}
-
+  \caption*{Through our analysis we found there are cases where we could not compute implied volatility (IV), as a result, the values were NaN. In figure above, there is a clear trend where the percentage of uncomputable IVs increase as time to maturity decreases.}
   \label{fig:time1lvl2fig5}
 \end{figure}
 
-\begin{figure}[ht] % You can adjust the placement options (htbp) as needed
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
   \captionsetup{font={normalsize,bf}}
   \caption{\STARTTWO\ to \ENDTWO\ Pre- and Post-Filter Uncomputable IVs by Time to Maturity}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig5.png}%{\PathToOutput/pdf_temp.pdf}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig5.png}
   \captionsetup{font={small,it}}
-  \caption*{Through our analysis we found there are cases where we could not compute implied volatility (IV), as a result, the values were NaN. In figure above, there is a clear trend where the percentage of uncomputable IVs increase as time to maturity decreases.}
+  \caption*{While the trend for uncomputable IVs increasing as time to maturity decreases is still present in the \STARTTWO\ to \ENDTWO\ dataset, the percentage of uncomputable IVs post-filter is lower than in the \STARTONE\ to \ENDONE\ dataset.}
  \label{fig:time2lvl2fig5}
 \end{figure}
 
-\clearpage
+Further data on the results of the Level 2 filters can be accessed with the links below, and are included in \autoref{app:lvl2}.
 
 \subsubsection{Level 2 Additional Data: \STARTONE\ to \ENDONE }
 Figures: \autoref{fig:time1lvl2fig1}, \autoref{fig:time1lvl2fig2}, \autoref{fig:time1lvl2fig3}, \autoref{fig:time1lvl2fig4}
@@ -175,6 +190,7 @@ Figures: \autoref{fig:time1lvl2fig1}, \autoref{fig:time1lvl2fig2}, \autoref{fig:
 Figures: \autoref{fig:time2lvl2fig1}, \autoref{fig:time2lvl2fig2}, \autoref{fig:time2lvl2fig3}, \autoref{fig:time2lvl2fig4}
 
 
+\clearpage
 \subsection{Level 3 Filters} 
 
 \paragraph{Methodology}
@@ -184,7 +200,7 @@ Importantly, since the IV and PCP filters (as well as the Level 1 and Level 2 fi
 
 \begin{itemize}
   \item \textit{IV Filter}: The objective of the IV filter was to reduce the prevalence of apparent butterfly arbitrage. A butterfly arbitrage occurs when there is a discrepancy in the IV structure across difference moneyness levels for options having the same expiration date. The construction of the IV filter involved fitting a quadratic polynomial to the observed log volatilities of puts and calls separately (a computationally intensive task). The original paper then measured the relative distance in percent between the fitted log IVs and the observed log IVs, grouped the options into moneyness bins, calculated the standard deviation of the entire sample of relative distances by moneyness bin, and then filtered out options where the relative distance was greater than a certain threshold.
-  \item \textit{PCP Filter}: The objective of the PCP filter was to ensure that put-call parity held for every put-call option pair with the same date, expiry date, and moneyness. This was done by utilizing the put-call parity equation (Equation~\ref{eq:pcp}) to calculate the implied interest rate based on each option pair's bid-ask midpoint prices.
+  \item \textit{PCP Filter}: The objective of the PCP filter was to ensure that put-call parity held for every put-call option pair with the same date, expiry date, and moneyness. This was done by utilizing the put-call parity equation (\autoref{eq:pcp}) to calculate the implied interest rate based on each option pair's bid-ask midpoint prices.
 \begin{align}
   \label{eq:pcp}
   C-P &= S-Ke^{rT} \\
@@ -198,63 +214,106 @@ Importantly, since the IV and PCP filters (as well as the Level 1 and Level 2 fi
 \citet{constantinides2013} do not provide detail on the relative distance algorithms utilized and are also unclear on what standard deviation threshold was used for exclusion with the Level 3 filters. For our base case replication, we assumed a percentage relative distance, but sensitized the filtered option counts to other methods, including Manhattan (absolute) distance, and Euclidean distance. For the standard deviation threshold base case, we excluded options $>$2 standard deviations away, but sensitized 2.0 to 5.0 standard deviations. Despite these efforts, we found that no combination of parameters could replicate the filtered option counts in the original paper, likely due to differences in the core assumptions of the relative distance algorithms and standard deviation thresholds, and potentially due to downstream effects from the Level 1 and Level 2 filters. 
 
 
-appendix: \autoref{app:lvl3}
+\autoref{fig:time1lvl3fig2} and \autoref{fig:time1lvl3fig4} will help reader understand the impact of the Level 3 filters applied to the Level 2 filtered data from \STARTONE\ to \ENDONE.
+
+\begin{figure}[htbp]
+  \centering
+  \captionsetup{font={normalsize,bf}}
+  \caption{\STARTONE\ to \ENDONE\ Level 3 Data (After Level 2 Filters), with Quadratic Polynomial Fitted IVs}
+  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig2_L2fitted_iv.png}
+  \captionsetup{font={small,it}}
+  \caption*{We note that the IV charts for the remaining calls and puts after the Level 2 filters still exhibit some anomalous IV readings, particulary for options that are away-from-the-money. This is the apparent ``butterfly arbitrage'' that the Level 3 filters aim to remove.}
+  \label{fig:time1lvl3fig2}
+\end{figure}
+\clearpage
 
 
-\subsubsection{\STARTONE\ to \ENDONE }
-figure tags: 
-\autoref{fig:time1lvl3fig1}
-\autoref{fig:time1lvl3fig2}
-\autoref{fig:time1lvl3fig3}
-\autoref{fig:time1lvl3fig4}
+\begin{figure}[htbp]
+  \centering
+  \captionsetup{font={normalsize,bf}}
+  \caption{\STARTONE\ to \ENDONE\ Level 3 Filtered Data: IV Filter Only}
+  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig3_IV_filter_only.png}
+  \captionsetup{font={small,it}}
+  \caption*{Using the Level 3 IV filters, we are able to remove a significant number of IV outliers. However, we observe that there still seem to be IV outliers for calls and puts. This necessitates the next Level 3 filter: the PCP filter.}
+  \label{fig:time1lvl3fig3}
+\end{figure}
+
+\clearpage
+
+
+\begin{figure}[htbp]
+  \centering
+  \captionsetup{font={normalsize,bf}}
+  \caption{\STARTONE\ to \ENDONE\ Level 3 Filtered Data: An Elegant Filtration}
+  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig4_IV_and_PCP.png}
+  \captionsetup{font={small,it}}
+  \caption*{Using the Level 3 filters, we were able to remove a significant number of IV outliers and option pairs that do not satisfy put-call parity. Note that the final distribution of IV in the middle row charts is more akin to the theoretical ``volatility smile'', indicating that the filters are indeed quite elegant in their combined effect. Notice also how this filtration tightens the relationship between the fitted and observed log IVs in the top right charts.}
+  \label{fig:time1lvl3fig4}
+\end{figure}
+
+\clearpage
+
+Further data on the results of the Level 3 filters applied to the 2012-2019 data can be accessed with the links below, and are included in \autoref{app:lvl3}
+
 \subsubsection{\STARTTWO\ to \ENDTWO }
-figure tags: 
-\autoref{fig:time2lvl3fig1}
-\autoref{fig:time2lvl3fig2}
-\autoref{fig:time2lvl3fig3}
-\autoref{fig:time2lvl3fig4}
+Figures: \autoref{fig:time2lvl3fig2}, \autoref{fig:time2lvl3fig3}, \autoref{fig:time2lvl3fig4}
 
 
+\clearpage
 
+\section{Replicating Table 2}
+\autoref{tab:t2} in the original paper describes how many options are ``found'', ``go missing'', or expire in the dataset, according to definitions developed by \citet{constantinides2013}. An option is found if it disappears and then reappears in the data the next trading day. An option is missing if it disappears and does not reappear the next trading day. Multiple days missing count as multiple options missing. Lastly, if an option is lost and expires this is noted as expired. Our results are summarized in \autoref{tab:t2}.
 
+We would like to note an interesting aspect of the \STARTONE\ to \ENDONE\ dataset. Over 80\% of the options expire on a Saturday or a non-trading day (10\% expire on trading days, and 3\% on other days). We suspect that this may be due to changes in data reporting norms, but this would need to be researched further. To handle this issue, we pushed the expiration day to the nearest Friday, presumably the nearest trading day. However, there were several edge cases that would need to be addressed individually. As a result, discrepancies exist between our analysis and \citet{constantinides2013}, and further investigation is required. A short summary of the data distribution is given in \autoref{table:T2days} in \autoref{app:oddExpDates}. 
 
+\newpage
 
+\thispagestyle{empty}
+\begin{landscape}
 
-
-
-
-
-\section{Replicating Table2}
-\autoref{tab:t2} describes how many options are found, go missing, or expire in the dataset. An option is found if it reappears the next trading day. An option is missing for if it does not reappear the next trading day. Multiple days missing, counts as multiple options missing. Lastly, if an option is lost and expires this is noted as expired. 
-
-We would like to note an interesting aspect of the \STARTONE\ to \ENDONE\ dataset. Over 80\% of the options expire on a Saturday or a non-trading day. To handle this, we push the expiration day to the nearest Friday, presumably the nearest trading day. However, there are quite a few edge cases which would explain the discrepancy between our analysis and \citet{constantinides2013}. Further investigation is required. A short summary of the day distribution is given in \autoref{table:T2days}. 
-
-%To implement this table we use pandas market calendars to produce an array of NYSE trading days. We then assign an integer to each day and merge this to our dataframe. To determine the time an option is lost, we use a relative distance argument and take differences using the integers. This is much faster than subtracting datetime objects with conditionals on if we're getting a trading day. adf
-
-
-\begin{table}[ht]
-
-\centering
-\captionsetup{font={small,bf}}
-\caption{Option Expiration days}
-
-
-\input{\PathToOutput/T2_days.tex}
-\captionsetup{font={small,bf}}
-\caption*{Trading days are determined by the NYSE calendar provided by pandas market days. }
-\label{table:T2days}
+\begin{table}
+   \centering
+   \captionsetup{font={normalsize, bf}}
+   \caption{Table 2 Results}    
+  \resizebox{1.4\textwidth}{!}{
+  \hspace*{-4cm}
+    \input{\PathToOutput/table2.tex}
+    }
+  \captionsetup{font={small, it}}
+  \caption*{Tracking the instances options are found, missing or expired.}
+\label{tab:t2}
 \end{table}
-
-
-
+\vfill
+\raisebox{-6.5cm}{\makebox[\linewidth]{\thepage}}
+\end{landscape}
 
 
 
 \section{Conclusion} 
 
-Our findings illustrate that seemingly straight forward instructions for filtering data may lead to divergent results. To reduce these errors, we suggest that journals require that computationally intense manuscripts, such as \citet{constantinides2013}, publish their code base along with their findings. Our data acquisition is briefly described in \autoref{app:data}, and our code base can be found our \href{https://github.com/harrypandas/finm-32900_final_project.git}{Github} \footnote{ \url{https://github.com/harrypandas/finm-32900_final_project.git} }.
+Our findings illustrate that seemingly straight forward instructions for filtering data may lead to divergent results, with potentially significant downstream impacts, supporting the idea of a ``reproducibility crisis'' in academic finance. These findings can be broadly summarized as follows:
+
+\begin{itemize}
+  \item \textit{Compounding data filtration errors}: We see these divergences in the application of the Level 1, Level 2, and Level 3 filters to the \STARTONE\ to \ENDONE\ and \STARTTWO\ to \ENDTWO\ datasets, despite our best efforts to replicate the analysis in \citet{constantinides2013} as closely as possible. Due to the sequential application of these filters, errors get compounded downstream, and the final option portfolios may be significantly different from those in the original paper.
+  \item \textit{Errors due to lack of specificity in algorithms and parameters}: We believe that the differences in our results are due to the lack of specificity in the original paper regarding the exact methods used to apply the filters, and the lack of detail on the parameters used in the filters. There may be some potential impacts from changes in the underlying databases as well, but we have no information on this. 
+\end{itemize}
+
+Importantly, one of the major stated objectives of the filters was to reduce the prevalence of apparent butterfly arbitrage. While the final filtration results after Level 3 show a relatively ``well-behaved'' implied volatility distribution (see \autoref{fig:time1lvl3fig4}), observe how the ``butterfly wings'' reappear when we apply the same filters, with the same parameters to the data from \STARTTWO\ to \ENDTWO! (see \autoref{fig:time2lvl3fig4}).
+
+This is a clear indication that the filters are not robust to the passage of time, and as such, pricing models based on data filtered by the processes described in \citet{constantinides2013} should be subject to regular review and scrutiny.
+
+To reduce these errors, we suggest that journals require authors of computationally intense manuscripts, such as \citet{constantinides2013}, to publish their code base along with their findings. Our data acquisition process is briefly described in \autoref{app:data}, and our code base can be found on our \href{https://tinyurl.com/3psws69d}{Github}\footnote{ \url{https://tinyurl.com/3psws69d} } repository.
 
 
+\begin{figure}[H] % You can adjust the placement options (htbp) as needed
+  \centering
+  \captionsetup{font={normalsize,bf}}
+  \caption{\STARTTWO\ to \ENDTWO\ Level 3 Filtered Data: Not So Elegant Filtration}
+  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig4_IV_and_PCP.png}
+  \captionsetup{font={small,it}}
+  \caption*{Applying the same filters to a different time period does not yield an elegant implied volatility distribution, and clearly does not eliminate opportunities for butterfly arbitrage! Notice how the identical filtration process does not yield lognormal IV, and the resultant volatility smile is irregular and somewhat V-shaped.}
+  \label{fig:time2lvl3fig4}
+\end{figure}
 
 
 
@@ -264,52 +323,8 @@ Our findings illustrate that seemingly straight forward instructions for filteri
 % \bibliography{\PathToBibFile}
 % \printbibliography
 
+
 \newpage
-
-\thispagestyle{empty}
-\begin{landscape}
-
-\begin{table}
-
-\centering
- \captionsetup{font={Large}}
-\caption{Table B1 Summary}
-\resizebox{1.4\textwidth}{!}{
-\hspace*{-4cm}
-\input{\PathToOutput/tableB1.tex}
-}
-\caption*{
-  Number of observations that are removed upon application of Appendix B filters. 
-}
-\label{table:tableB1}
-\end{table}
-
-\vfill
-\raisebox{-3.5cm}{\makebox[\linewidth]{\thepage}}
-\end{landscape}
-\newpage
-
-\thispagestyle{empty}
-\begin{landscape}
-
-\begin{table}
-    \centering
-   \captionsetup{font={Large}}
-    \caption{ Table 2 Results}
-    
-\resizebox{1.4\textwidth}{!}{
-\hspace*{-4cm}
-  \input{\PathToOutput/table2.tex}
-  }
-
-  \caption*{Tracking the instances options are found, missing or expired.}
-\label{tab:t2}
-\end{table}
-\vfill
-\raisebox{-6.5cm}{\makebox[\linewidth]{\thepage}}
-\end{landscape}
-\newpage
-
 
 \begin{appendix}
 
@@ -330,172 +345,140 @@ The following links contain the documentation and helpful links for the WRDS dat
 
 
 
-\newpage
+% \newpage
 
-\section{Level 1 Filter}\label{app:lvl1}
-** moved to main content **
+% \section{Level 1 Filter}\label{app:lvl1}
+% ** moved to main content **
 
-\newpage
+% \newpage
+\section{Odd Expiration Dates}\label{app:oddExpDates}
 
-\section{Level 2 Filter}\label{app:lvl2}
+\vspace{20pt}
+\begin{table}[H]
+  \centering
+  \captionsetup{font={normalsize,bf}}
+  \caption{Option Expiration days}
+  \input{\PathToOutput/T2_days.tex}
+  \captionsetup{font={small,it}}
+  \caption*{Trading days are determined by the NYSE calendar provided by \texttt{pandas} market days. }
+  \label{table:T2days}
+\end{table}
+
+\section{Additional Data: Level 2 Filters}\label{app:lvl2}
 \subsection{\STARTONE\ to \ENDONE }
 
-\subsubsection{Effects of filtering Days to Maturity <7 or >180}
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-%\captionsetup{font={small,bf}}
-% \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig1.png}%{\PathToOutput/pdf_temp.pdf}
-\captionsetup{font={small,bf}}
-  \caption{Distribution of time to maturity, measured in years from option initial date to expiration date. The graph on the left shows the distribution prior to applying the initial level 2 filter of excluding days to maturity less than 7 and greater than 180. Right shows distribution post filter.}
+  \captionsetup{font={normalsize,bf}}
+  \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig1.png}
+  \captionsetup{font={small,it}}
+  \caption*{Distribution of time to maturity, measured in years from option initial date to expiration date. The graph on the left shows the distribution prior to applying the initial Level 2 filter of excluding days to maturity less than 7 and greater than 180. Right shows distribution post filter.}
 \label{fig:time1lvl2fig1}
 \end{figure}
 
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-%\captionsetup{font={small,bf}}
-% \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig2.png}%{\PathToOutput/pdf_temp.pdf}
-\captionsetup{font=normalfont}
-  \caption{As noted in the paper, the short maturity options tend to move erratically nearing expiration. In Figure 2, post-filter (red) we see a slight reduction of short-term options with a high implied volatility.}
+  \captionsetup{font={normalfont, bf}}  
+  \caption{Comparison of Pre- and Post-Filter Data}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig2.png}
+  \captionsetup{font={small, it}}
+  \caption*{As noted in the paper, the short maturity options tend to move erratically nearing expiration. In \autoref{fig:time1lvl2fig2}, post-filter (red) we see a slight reduction of short-term options with a high implied volatility.}
 \label{fig:time1lvl2fig2}
 \end{figure}
 
-\subsubsection{Effects of filtering IV <5\% or >100\%}
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-\captionsetup{font={small,bf}}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig3.png}%{\PathToOutput/pdf_temp.pdf}
-\captionsetup{font=normalfont}
-  \caption{Removing option quotes with implied volatilities lower than 5\% or higher than 100\% eliminates extreme values and reduces the skewness of the implied volatility distribution.}
+  \captionsetup{font={normalfont, bf}}  
+  \caption{Effects of filtering IV $<$5\% or $>$100\%}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig3.png}
+  \captionsetup{font={small, it}}
+  \caption*{Removing option quotes with implied volatilities lower than 5\% or higher than 100\% eliminates extreme values and reduces the skewness of the implied volatility distribution.}
 \label{fig:time1lvl2fig3}
 \end{figure}
 
 
-\subsubsection{Effects of filtering on Moneyness <0.8 or >1.2}
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-\captionsetup{font={small,bf}}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig4.png}%{\PathToOutput/pdf_temp.pdf}
-\captionsetup{font=normalfont}
-  \caption{Removing option quotes with moneyness lower than 0.8 and higher than 1.2 eliminates extreme values. These extreme values potentially have quotation problems or low values.}
+  \captionsetup{font={normalfont, bf}}  
+  \caption{Effects of filtering on Moneyness $<$0.8 or $>$1.2}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTONE_\ENDONE_fig4.png}
+  \captionsetup{font={small, it}}
+  \caption*{Removing option quotes with moneyness lower than 0.8 and higher than 1.2 eliminates extreme values. These extreme values potentially have quotation problems or low values.}
   \label{fig:time1lvl2fig4}
 \end{figure}
 
 
 \subsection{\STARTTWO\ to \ENDTWO }
 
-% \subsubsection{Effects of filtering Days to Maturity <7 or >180}
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-%\captionsetup{font={small,bf}}
-% \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig1.png}%{\PathToOutput/pdf_temp.pdf}
-\captionsetup{font=normalfont}
-  \caption{Distribution of time to maturity, measured in years from option initial date to expiration date. The graph on the left shows the distribution prior to applying the initial level 2 filter of excluding days to maturity less than 7 and greater than 180. Right shows distribution post filter.}
+  \captionsetup{font={normalfont, bf}}  
+  \caption{Effects of filtering Days to Maturity $<$7 or $>$180}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig1.png}
+  \captionsetup{font={small, it}}
+  \caption*{Distribution of time to maturity, measured in years from option initial date to expiration date. The graph on the left shows the distribution prior to applying the initial level 2 filter of excluding days to maturity less than 7 and greater than 180. Right shows distribution post filter.}
 \label{fig:time2lvl2fig1}
 \end{figure}
 
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-%\captionsetup{font={small,bf}}
-% \caption{Effects of filtering Days to Maturity $<$7 or$ >$180}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig2.png}%{\PathToOutput/pdf_temp.pdf}
-\captionsetup{font=normalfont}
-  \caption{As noted in the paper, the short maturity options tend to move erratically nearing expiration. In Figure 2, post-filter (red) we see a slight reduction of short-term options with a high implied volatility.}
-\label{fig:time2lvl2fig2}
+  \captionsetup{font={normalfont, bf}}  
+  \caption{Comparison of Pre- and Post-Filter Data}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig2.png}
+  \captionsetup{font={small,it}}
+  \caption*{As noted in the paper, the short maturity options tend to move erratically nearing expiration. In \autoref{fig:time2lvl2fig2}, post-filter (red) we see a slight reduction of short-term options with a high implied volatility.}
+  \label{fig:time2lvl2fig2}
 \end{figure}
 
-\subsubsection{Effects of filtering IV <5\% or >100\%}
+
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-\captionsetup{font={small,bf}}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig3.png}%{\PathToOutput/pdf_temp.pdf}
-\captionsetup{font=normalfont}
-  \caption{Removing option quotes with implied volatilities lower than 5\% or higher than 100\% eliminates extreme values and reduces the skewness of the implied volatility distribution.}
+  \captionsetup{font={normalsize,bf}}
+  \caption{Effects of filtering IV $<$5\% or $>$100\%}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig3.png}
+  \captionsetup{font={small,it}}
+  \caption*{Removing option quotes with implied volatilities lower than 5\% or higher than 100\% eliminates extreme values and reduces the skewness of the implied volatility distribution.}
 \label{fig:time2lvl2fig3}
 \end{figure}
 
 
-\subsubsection{Effects of filtering on Moneyness <0.8 or >1.2}
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-\captionsetup{font={small,bf}}
-  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig4.png}%{\PathToOutput/pdf_temp.pdf}
-\captionsetup{font=normalfont}
-  \caption{Removing option quotes with moneyness lower than 0.8 and higher than 1.2 eliminates extreme values. These extreme values potentially have quotation problems or low values.}
+  \captionsetup{font={normalsize,bf}}
+  \caption{Effects of filtering on Moneyness $<$0.8 or $>$1.2}
+  \includegraphics[width=\textwidth]{\PathToOutput/L2_\STARTTWO_\ENDTWO_fig4.png}
+  \captionsetup{font={small, it}}
+  \caption*{Removing option quotes with moneyness lower than 0.8 and higher than 1.2 eliminates extreme values. These extreme values potentially have quotation problems or low values.}
   \label{fig:time2lvl2fig4}
 \end{figure}
 
 
 
 \newpage
-\section{Level 3 Filter}\label{app:lvl3}
-\subsection{\STARTONE\ to \ENDONE }
+\section{Additional Data: Level 3 Filters}\label{app:lvl3}
 
-\begin{figure}[H] % You can adjust the placement options (htbp) as needed
-  \centering
-  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig1_post_L2filter.png}%{\PathToOutput/pdf_temp.pdf}
-  \caption{Your caption here}
- \label{fig:time1lvl3fig1}
-\end{figure}
-
-
-\begin{figure}[H] % You can adjust the placement options (htbp) as needed
-  \centering
-  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig2_L2fitted_iv.png}%{\PathToOutput/pdf_temp.pdf}
-  \caption{Your caption here}
-  \label{fig:time1lvl3fig2}
-\end{figure}
-
-
-\begin{figure}[H] % You can adjust the placement options (htbp) as needed
-  \centering
-  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig3_IV_filter_only.png}%{\PathToOutput/pdf_temp.pdf}
-  \caption{Your caption here}
- \label{fig:time1lvl3fig3}
-\end{figure}
-
-
-\begin{figure}[H] % You can adjust the placement options (htbp) as needed
-  \centering
-  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTONE_\ENDONE_fig4_IV_and_PCP.png}%{\PathToOutput/pdf_temp.pdf}
-  \caption{Your caption here}
- \label{fig:time1lvl3fig4}
-\end{figure}
-
-\newpage
 \subsection{\STARTTWO\ to \ENDTWO }
 
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig1_post_L2filter.png}%{\PathToOutput/pdf_temp.pdf}
-  \caption{Your caption here}
-  \label{fig:time2lvl3fig1}
-\end{figure}
-
-
-\begin{figure}[H] % You can adjust the placement options (htbp) as needed
-  \centering
-  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig2_L2fitted_iv.png}%{\PathToOutput/pdf_temp.pdf}
-  \caption{Your caption here}
+  \captionsetup{font={normalsize,bf}}
+  \caption{Level 3 Data (After Level 2 Filters): Messy IVs}
+  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig2_L2fitted_iv.png}
+  \captionsetup{font={small,it}}
+  \caption*{We note that the IV charts for the remaining calls and puts after the Level 2 filters still exhibit some anomalous IV readings, particulary for options that are away-from-the-money. This is the apparent ``butterfly arbitrage'' that the Level 3 filters aim to remove.}
   \label{fig:time2lvl3fig2}
 \end{figure}
 
 
 \begin{figure}[H] % You can adjust the placement options (htbp) as needed
   \centering
-  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig3_IV_filter_only.png}%{\PathToOutput/pdf_temp.pdf}
-  \caption{Your caption here}
+  \captionsetup{font={normalsize,bf}}
+  \caption{Level 3 Data (After IV Filter Only): Not So Effective}
+  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig3_IV_filter_only.png}
+  \captionsetup{font={small,it}}
+  \caption*{The Level 3 IV filter is not as effective at removing the outliers as we would like. As showing in \autoref{fig:time2lvl3fig4}, even the PCP filter was unable to remove opportunities for butterfly arbitrage, highlighting the time-fragility of the filters.}
   \label{fig:time2lvl3fig3}
-\end{figure}
-
-
-\begin{figure}[H] % You can adjust the placement options (htbp) as needed
-  \centering
-  \includegraphics[width=\textwidth]{\PathToOutput/L3_\STARTTWO_\ENDTWO_fig4_IV_and_PCP.png}%{\PathToOutput/pdf_temp.pdf}
-  \caption{Your caption here}
-  \label{fig:time2lvl3fig4}
 \end{figure}
 
 \newpage
