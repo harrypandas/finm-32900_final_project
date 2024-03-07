@@ -443,8 +443,8 @@ def task_convert_notebooks_to_scripts():
 
     notebooks = [
         "01_Level01_Filters.ipynb",
-        # "02_Level02_Filters.ipynb",
-        # "03_Level03_Filters.ipynb",
+        "02_Level02_Filters.ipynb",
+        "03_Level03_Filters.ipynb",
     ]
     file_dep = [Path("./notebooks") / file for file in notebooks]
     stems = [notebook.split(".")[0] for notebook in notebooks]
@@ -471,8 +471,8 @@ def task_run_notebooks():
     """
     notebooks_to_run_as_md = [
         "01_Level01_Filters.ipynb",
-        # "02_Level02_Filters.ipynb",
-        # "03_Level03_Filters.ipynb",
+        "02_Level02_Filters.ipynb",
+        "03_Level03_Filters.ipynb",
     ]
     stems = [notebook.split(".")[0] for notebook in notebooks_to_run_as_md]
 
