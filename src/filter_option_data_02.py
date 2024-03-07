@@ -1,3 +1,7 @@
+"""
+This module contains functions to filter options data based on time to maturity, implied volatility, moneyness, and implied interest rate.
+"""
+
 import pandas as pd
 import numpy as np
 from datetime import datetime,timedelta
