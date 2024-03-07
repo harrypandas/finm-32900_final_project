@@ -1,4 +1,7 @@
-
+"""
+This file creates five Level 2 plots for the options data. 
+The plots are saved to the output directory and included in the final report pdf.
+"""
 
 import filter_option_data_02 as f2
 import matplotlib.pyplot as plt

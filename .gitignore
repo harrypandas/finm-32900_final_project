@@ -257,3 +257,4 @@ rubric.docx
 *.pdf
 !final_report.pdf
 
+notebooks/vdd.ipynb
