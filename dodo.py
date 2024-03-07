@@ -314,7 +314,7 @@ def task_Table2_Analysis():
     'actions': [
     "ipython ./src/filter_option_data_04.py"
     ], 
-   # "targets": targets,
+    "targets": targets,
     "file_dep": file_dep,
     'clean': True,
     "verbosity": 2,
