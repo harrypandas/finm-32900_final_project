@@ -31,6 +31,18 @@
 
 	pip install -r requirements.txt 
 	```
+
+ * Alternatively, if you prefer using conda (or run into dependency issues with pip) run this from the directory where the environment.yml file is located:
+	```
+ 	conda env create -f environment.yml
+
+ 	conda activate puzzle
+
+ 	# verify the packages installed
+ 	conda list
+	```
+ 	*Note that with the approach above, you may have to manually install packages that are not available via conda (e.g. wrds via pip install wrds).*
+ 
 * Optional Action: Set up .env file 
 	* Copy env.example to .env
 	* In this file you may set the directories that the data and output files will be saved to. Please note, that the final latex report will be saved under ./reports.
