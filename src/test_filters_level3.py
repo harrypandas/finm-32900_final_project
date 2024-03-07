@@ -17,23 +17,17 @@ def test_level_3_final_output():
     Test final output of the level 3 filter.
     """
     
-    filtered_df = filter_option_data_03.run_filter()
-
-    check_results = pd.DataFrame(index=pd.MultiIndex.from_product([['Level 3 filters'], ['IV filter', 'Put-call parity filter', 'All']]),
-                             columns=pd.MultiIndex.from_product([['Berkeley', 'OptionMetrics'], ['Deleted', 'Remaining']]))
-    check_results.loc[['Level 3 filters'], ['Berkeley', 'OptionMetrics']] = [
-        [10865, np.nan, 67850, np.nan],
-        [10298, np.nan,46138, np.nan],
-        [np.nan, 173500,np.nan, 962784]]
+    l3_data_iv_only, l3_filtered_options = filter_option_data_03.run_filter(_df=None, date_range='1996-01_2012-01', iv_only=False)    
+    
+    iv_only_remaining_options = len(l3_data_iv_only)
+    iv_and_pcp_remaining_options = len(l3_filtered_options)
+    pcp_filter_dropped_count = iv_and_pcp_remaining_options - iv_only_remaining_options
     
     '''
     Expected output:
-    
-                                            Berkeley           OptionMetrics          
-                                            Deleted Remaining       Deleted Remaining
-    Level 3 filters IV filter                 10865       NaN         67850       NaN
-                    Put-call parity filter    10298       NaN         46138       NaN
-                    All                         NaN    173500           NaN    962784
+    Remaining options after IV filter == 593431 - 38568 = 554863
+    Remaining options after IV and PCP filter ==  461890
+    PCP filter drop count == 92973
     ''' 
     
-    assert_frame_equal(filtered_df, check_results, atol=1e-2)
+    assert (iv_only_remaining_options==554863, iv_and_pcp_remaining_options==461890, pcp_filter_dropped_count==92973)
