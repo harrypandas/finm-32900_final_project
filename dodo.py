@@ -11,6 +11,7 @@ from doit.tools import run_once
 import shutil
 
 from load_option_data_01 import run_load_all_optm_data 
+import glob
 
 OUTPUT_DIR = Path(config.OUTPUT_DIR)
 DATA_DIR = Path(config.DATA_DIR)
@@ -160,6 +161,9 @@ def task_filter_appendix_B():
     DATA_DIR / f"pulled/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet", 
     DATA_DIR / f"pulled/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
     ]
+
+    
+    
     targets = [
         OUTPUT_DIR / f"tableB1_{START_DATE_01[:7]}_{END_DATE_01[:7]}.parquet",
 
@@ -167,6 +171,8 @@ def task_filter_appendix_B():
 
         DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L2filter.parquet",
 
+        DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filterIVonly.parquet",
+        
         DATA_DIR / f"intermediate/data_{START_DATE_01[:7]}_{END_DATE_01[:7]}_L3filter.parquet",
 
         OUTPUT_DIR / f"tableB1_{START_DATE_02[:7]}_{END_DATE_02[:7]}.parquet",
@@ -175,13 +181,33 @@ def task_filter_appendix_B():
 
         DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L2filter.parquet",
 
+        DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L3filterIVonly.parquet",
+        
         DATA_DIR / f"intermediate/data_{START_DATE_02[:7]}_{END_DATE_02[:7]}_L3filter.parquet",
+        
+        OUTPUT_DIR / f"L3_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig1_post_L2filter.png",
+        OUTPUT_DIR / f"L3_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig2_L2fitted_iv.png",
+        OUTPUT_DIR / f"L3_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3_IV_filter_only.png",
+        OUTPUT_DIR / f"L3_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3_IV_and_PCP.png",
+        OUTPUT_DIR / f"L3_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3_Final_vs_OptionMetrics.parquet",
+        OUTPUT_DIR / f"L3_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3_Final_vs_OptionMetrics.tex",
+        OUTPUT_DIR / f"L3_{START_DATE_01[:7]}_{END_DATE_01[:7]}_fig3_nan_ivs_in_L2_data.tex",
+        
+        OUTPUT_DIR / f"L3_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig1_post_L2filter.png",
+        OUTPUT_DIR / f"L3_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig2_L2fitted_iv.png",
+        OUTPUT_DIR / f"L3_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3_IV_filter_only.png",
+        OUTPUT_DIR / f"L3_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3_IV_and_PCP.png",
+        OUTPUT_DIR / f"L3_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3_Final_vs_OptionMetrics.parquet",
+        OUTPUT_DIR / f"L3_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3_Final_vs_OptionMetrics.tex",
+        OUTPUT_DIR / f"L3_{START_DATE_02[:7]}_{END_DATE_02[:7]}_fig3_nan_ivs_in_L2_data.tex",
         ]
+    
+    
     actdict = {
     'actions': [
     "ipython ./src/filter_option_data_B.py"
     ], 
-   # "targets": targets,
+    "targets": targets,
     "file_dep": file_dep,
     'clean': True,
     "verbosity": 2,
