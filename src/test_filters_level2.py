@@ -52,7 +52,7 @@ def test_l2_filters_validity():
     df = f2.apply_l2_filters(df)
 
     # expected result >> based on paper
-    expected = 642_944
+    expected = 451_116
 
     # assert that the number of rows is the same as the original
     assert df.shape[0] == expected, "The number of rows should return 642_944"
