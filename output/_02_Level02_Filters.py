@@ -52,6 +52,7 @@ import config
 from pathlib import Path 
 import time 
 import matplotlib.pyplot as plt
+import random
 
 import load_option_data_01 as l1
 import filter_option_data_01 as f1
@@ -116,11 +117,15 @@ plt.show()
 # In[ ]:
 
 
-plt.scatter(optm_l1_df['time_to_maturity_yrs'], optm_l1_df['impl_volatility'], label='Pre-Filter')
-plt.scatter(optm_l2_df['time_to_maturity_yrs'], optm_l2_df['impl_volatility'], label='Post-Filter', color='darkred')
+sample_size = 200000  # Adjust as needed
+sample_ind_l1 = random.sample(range(len(optm_l1_df)), min(sample_size, len(optm_l1_df)))
+sample_ind_l2 = random.sample(range(len(optm_l2_df)), min(sample_size, len(optm_l2_df)))
+
+plt.plot(optm_l1_df.iloc[sample_ind_l1]['time_to_maturity_yrs'], optm_l1_df.iloc[sample_ind_l1]['impl_volatility'], 'o', alpha=0.5, label='Pre-Filter')
+plt.plot(optm_l2_df.iloc[sample_ind_l2]['time_to_maturity_yrs'], optm_l2_df.iloc[sample_ind_l2]['impl_volatility'], 'o', alpha=0.5, label='Post-Filter', color='darkred')
 plt.xlabel('Time to Maturity (Years)')
 plt.ylabel('Implied Volatility')
-plt.title('Implied Volatility vs Time to Maturity')
+plt.title('Implied Volatility vs Time to Maturity (Random Sample)')
 plt.legend()
 plt.show()
 
@@ -130,19 +135,28 @@ plt.show()
 # In[ ]:
 
 
-fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+vol_ttm_1 = optm_l1_df.groupby('time_to_maturity')['volume'].sum().reset_index()
+vol_ttm_2 = optm_l2_df.groupby('time_to_maturity')['volume'].sum().reset_index()
+int_ttm_1 = optm_l1_df.groupby('time_to_maturity')['open_interest'].sum().reset_index()
+int_ttm_2 = optm_l2_df.groupby('time_to_maturity')['open_interest'].sum().reset_index()
 
-# Plotting volume for optm_l1_df
-optm_l1_df.plot(x='time_to_maturity_yrs', y='volume', kind='scatter', ax=axes[0])
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+
+# Plotting volume for optm_l1_df as a bar graph
+axes[0].bar(vol_ttm_1['time_to_maturity'], vol_ttm_1['volume'], alpha=0.7)
 axes[0].set_xlabel('Time to Maturity (Years)')
 axes[0].set_ylabel('Volume')
 axes[0].set_title('Volume vs Time to Maturity (Pre-Filter)')
 
-# Plotting volume for optm_l2_df
-optm_l2_df.plot(x='time_to_maturity_yrs', y='volume', kind='scatter', ax=axes[1], color='darkred')
+# Plotting volume for optm_l2_df as a bar graph
+axes[1].bar(vol_ttm_2['time_to_maturity'], vol_ttm_2['volume'], color='darkred', alpha=0.7)
 axes[1].set_xlabel('Time to Maturity (Years)')
 axes[1].set_ylabel('Volume')
 axes[1].set_title('Volume vs Time to Maturity (Post-Filter)')
+
+# Rotating x-axis labels for better readability
+for ax in axes:
+    ax.tick_params(axis='x', rotation=45)
 
 # Adjusting the spacing between subplots
 plt.tight_layout()
@@ -150,19 +164,23 @@ plt.tight_layout()
 # Show the plot
 plt.show()
 
-fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+fig, axes = plt.subplots(1, 2, figsize=(14, 5))
 
-# Plotting open interest for optm_l1_df
-optm_l1_df.plot(x='time_to_maturity_yrs', y='open_interest', kind='scatter', ax=axes[0])
+# Plotting volume for optm_l1_df as a bar graph
+axes[0].bar(int_ttm_1['time_to_maturity'], int_ttm_1['open_interest'], alpha=0.7)
 axes[0].set_xlabel('Time to Maturity (Years)')
 axes[0].set_ylabel('Open Interest')
 axes[0].set_title('Open Interest vs Time to Maturity (Pre-Filter)')
 
-# Plotting open interest for optm_l2_df
-optm_l2_df.plot(x='time_to_maturity_yrs', y='open_interest', kind='scatter', ax=axes[1], color='darkred')
+# Plotting volume for optm_l2_df as a bar graph
+axes[1].bar(int_ttm_2['time_to_maturity'], int_ttm_2['open_interest'], color='darkred', alpha=0.7)
 axes[1].set_xlabel('Time to Maturity (Years)')
 axes[1].set_ylabel('Open Interest')
 axes[1].set_title('Open Interest vs Time to Maturity (Post-Filter)')
+
+# Rotating x-axis labels for better readability
+for ax in axes:
+    ax.tick_params(axis='x', rotation=45)
 
 # Adjusting the spacing between subplots
 plt.tight_layout()
@@ -208,18 +226,20 @@ plt.show()
 # In[ ]:
 
 
-import matplotlib.pyplot as plt
-
 fig, axes = plt.subplots(1, 2, figsize=(10, 4))
+sample_size = 200000  # Adjust as needed
+sample_ind_iv = random.sample(range(len(optm_l2_iv)), min(sample_size, len(optm_l2_iv)))
+sample_ind = random.sample(range(len(optm_l2_df)), min(sample_size, len(optm_l2_df)))
+
 
 # Plotting optm_l2_df
-axes[0].scatter(optm_l2_df['best_bid'], optm_l2_df['impl_volatility'])
+axes[0].scatter(optm_l2_df.iloc[sample_ind]['best_bid'], optm_l2_df.iloc[sample_ind]['impl_volatility'])
 axes[0].set_xlabel('Best Bid')
 axes[0].set_ylabel('Implied Volatility')
 axes[0].set_title('Implied Volatility vs Best Bid (Pre-Filter)')
 
 # Plotting optm_l2_iv
-axes[1].scatter(optm_l2_iv['best_bid'], optm_l2_iv['impl_volatility'])
+axes[1].scatter(optm_l2_iv.iloc[sample_ind_iv]['best_bid'], optm_l2_iv.iloc[sample_ind_iv]['impl_volatility'])
 axes[1].set_xlabel('Best Bid')
 axes[1].set_ylabel('Implied Volatility')
 axes[1].set_title('Implied Volatility vs Best Bid (Post-Filter)')
@@ -268,22 +288,23 @@ plt.show()
 # In[ ]:
 
 
+sample_size = 200000  # Adjust as needed
+sample_ind_iv = random.sample(range(len(optm_l2_iv)), min(sample_size, len(optm_l2_iv)))
+sample_ind_mny = random.sample(range(len(optm_l2_mny)), min(sample_size, len(optm_l2_mny)))
+
 fig, axes = plt.subplots(1, 2, figsize=(10, 4))
 
 # Plotting optm_l2_iv
-axes[0].scatter(optm_l2_iv['mnyns'], optm_l2_iv['volume'])
+axes[0].scatter(optm_l2_iv.iloc[sample_ind_iv]['mnyns'], optm_l2_iv.iloc[sample_ind_iv]['volume'])
 axes[0].set_xlabel('Moneyness')
 axes[0].set_ylabel('Volume')
-axes[0].set_title('Moneyness vs Volume (Pre-Filter)')
+axes[0].set_title('Moneyness vs Volume (Pre-Filter Sample)')
 
 # Plotting optm_l2_mny
-axes[1].scatter(optm_l2_mny['mnyns'], optm_l2_mny['volume'], color='darkred')
+axes[1].scatter(optm_l2_mny.iloc[sample_ind_mny]['mnyns'], optm_l2_mny.iloc[sample_ind_mny]['volume'], color='darkred')
 axes[1].set_xlabel('Moneyness')
 axes[1].set_ylabel('Volume')
-axes[1].set_title('Moneyness vs Volume (Post-Filter)')
-
-# axes[0].set_xlim(0.8, 1.2)
-# axes[1].set_xlim(0.8, 1.2)
+axes[1].set_title('Moneyness vs Volume (Post-Filter Sample)')
 
 # Add dotted line representing the range 0.8 to 1.2 on x-axis
 axes[0].axvline(0.8, color='black', linestyle='dotted')
@@ -310,12 +331,6 @@ optm_l2_int = f2.filter_implied_interest_rate(optm_l2_mny)
 
 
 # #### The authors implied interest rate was on average 54 bps above the T-bill rate. However, as shown below our calculate implied interest rate has a lower distribution than the T-bill rates.
-
-# In[ ]:
-
-
-optm_l2_int.head()
-
 
 # In[ ]:
 
@@ -354,7 +369,7 @@ percentage_left_only = optm_l2_int['_merge'].value_counts(normalize=True)['left_
 df_percentage = pd.DataFrame({'Percentage': [percentage_both, percentage_left_only]}, index=['both', 'left_only'])
 
 # Plot the dataframe as a pie chart
-df_percentage.plot(kind='pie', y='Percentage', legend=False, autopct='%1.1f%%')
+df_percentage.plot(kind='pie', y='Percentage', legend=False, autopct='%1.1f%%', colors=['darkred','C0'])
 plt.ylabel('')
 plt.title('Percentage directly assigned implied interest rate')
 
@@ -371,18 +386,22 @@ plt.show()
 
 optm_l2_univ = f2.filter_unable_compute_iv(optm_l2_int)
 
-nan_percentage = optm_l2_int.loc[optm_l2_int['impl_volatility'].isna()].groupby(['time_to_maturity']).size()/optm_l2_int.groupby(['time_to_maturity']).size()*100
-
 
 # In[ ]:
 
 
+sample_size = 100000  # Adjust as needed
+sample_ind_univ = random.sample(range(len(optm_l2_univ)), min(sample_size, len(optm_l2_univ)))
+size_x = optm_l2_univ.shape[0]/sample_size
+
+nan_percentage = (optm_l2_int.iloc[sample_ind_univ].loc[optm_l2_int['impl_volatility'].isna()].groupby(['time_to_maturity']).size())/(optm_l2_int.iloc[sample_ind_univ].groupby(['time_to_maturity']).size())*100
+
 plt.clf()
 plt.scatter(nan_percentage.index, nan_percentage, alpha=0.5, s=10, label='Pre-Filter')
-plt.scatter(optm_l2_univ['time_to_maturity'], optm_l2_univ['impl_volatility'], color='darkred', alpha=0.1, s=10, label='Post-Filter')
+plt.scatter(optm_l2_univ.iloc[sample_ind_univ]['time_to_maturity'], optm_l2_univ.iloc[sample_ind_univ]['impl_volatility'], color='darkred', alpha=0.1, s=10, label='Post-Filter')
 plt.xlabel('Time to Maturity')
 plt.ylabel('Percentage of NaN by Implied Volatility')
-plt.title('Percentage of NaN Implied Volatility by Time to Maturity')
+plt.title('Percentage of NaN Implied Volatility by Time to Maturity (Random Sample)')
 plt.legend()
 plt.show()
 
