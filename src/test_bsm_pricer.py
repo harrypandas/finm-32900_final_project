@@ -62,13 +62,14 @@ def test_calc_implied_volatility():
         "r": 0.05,
         "T": 1.75,
         "option_type": "call",
+        'method':'newton_raphson',
     }
 
     # Expected output:
     # Implied volatility: 0.6468780610638603
     expected_output = 0.6468780610638603
     
-    assert abs(bsm_pricer.calc_implied_volatility(**kwargs) - expected_output) < 1e-6
+    assert abs(bsm_pricer.calc_implied_volatility(**kwargs)[kwargs['method']] - expected_output) < 1e-6
     
 def test_calc_option_elasticity():
     """
