@@ -1,3 +1,7 @@
+"""
+This module contains unit tests for the Black-Scholes-Merton (BSM) pricer in bsm_pricer.py.
+"""
+
 import pandas as pd
 from pandas.testing import assert_frame_equal
 from functools import partial
