@@ -42,7 +42,7 @@ def createB1(T1, T2):
        
         
          \multicolumn{4}{c}{}  & \multicolumn{3}{c}{OptionMetrics: """ + f'{START_DATE_01[:7]} to {END_DATE_01[:7]}' + r"""}  &  \multicolumn{1}{c}{} & 
-         \multicolumn{3}{c}{OptionMetrics:""" + f'{START_DATE_02[:7]} to {END_DATE_02[:7]}' + r"""}&  \multicolumn{1}{c}{}  &
+         \multicolumn{3}{c}{OptionMetrics: """ + f'{START_DATE_02[:7]} to {END_DATE_02[:7]}' + r"""}&  \multicolumn{1}{c}{}  &
           \multicolumn{3}{c}{Total}  \\
          \cline{5-7}
                   
